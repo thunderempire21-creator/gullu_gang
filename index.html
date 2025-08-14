@@ -66,7 +66,6 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
         /* Updated styling for the start screen */
         #start-screen {
             position: absolute;
@@ -701,7 +700,6 @@
             const earthFrameCount = 6;
             let currentEarthFrame = 0;
             const earthAnimationSpeed = 15; // Slower animation speed
-
             const planet = { x: 0, y: 0, radius: 50 };
             let earthCracks = []; // New array to store crack objects
             let explosionParticles = []; // New array for explosion particles
@@ -759,13 +757,11 @@
             let healthUpgradeLevel = parseInt(localStorage.getItem('healthUpgradeLevel') || 0);
             let doubleBeamUpgradeLevel = parseInt(localStorage.getItem('doubleBeamUpgradeLevel') || 0);
             let coinMultiplierUpgradeLevel = parseInt(localStorage.getItem('coinMultiplierUpgradeLevel') || 0);
-            
             // --- Asset Loading ---
             const assetsToLoad = [];
             const ironManImage = new Image();
             ironManImage.src = 'images/Ironman.png';
             assetsToLoad.push(ironManImage);
-
             // NEW: Crack Images
             const crackImageSmall = new Image();
             const crackImageMedium = new Image();
@@ -774,7 +770,6 @@
             crackImageMedium.src = 'images/crack6.png';
             crackImageLarge.src = 'images/crack5.png';
             assetsToLoad.push(crackImageSmall, crackImageMedium, crackImageLarge);
-
             const earthFrameURLs = [
                 'images/frame1.png',
                 'images/frame2.png',
@@ -783,13 +778,20 @@
                 'images/frame5.png',
                 'images/frame6.png'
             ];
-
             for (let i = 0; i < earthFrameCount; i++) {
                 const frameImage = new Image();
-                frameImage.src = earthFrameURLs[i]; 
+                frameImage.src = earthFrameURLs[i];
                 earthFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
+            // NEW: Asteroid skin images
+            const smallAsteroidImage = new Image();
+            const mediumAsteroidImage = new Image();
+            const largeAsteroidImage = new Image();
+            smallAsteroidImage.src = 'images/small.png';
+            mediumAsteroidImage.src = 'images/medium.png';
+            largeAsteroidImage.src = 'images/large.png';
+            assetsToLoad.push(smallAsteroidImage, mediumAsteroidImage, largeAsteroidImage);
 
             let loadedAssets = 0;
             const totalAssets = assetsToLoad.length;
@@ -817,7 +819,6 @@
                     };
                 }
             });
-
             // Helper functions for TTS audio playback
             function base64ToArrayBuffer(base64) {
                 const binaryString = window.atob(base64);
@@ -1325,7 +1326,6 @@
                     }
                 }
             }
-
             /** NEW: Updates the timer on active cracks and removes them when expired. */
             function updateCracks() {
                 for (let i = earthCracks.length - 1; i >= 0; i--) {
@@ -1335,7 +1335,6 @@
                     }
                 }
             }
-
             /**
              * Central function to update all game objects.
              * This consolidates the logic from the original `update*` functions.
@@ -1363,7 +1362,6 @@
                         earthHealth -= damage.earth;
                         if (earthHealth < 0) earthHealth = 0;
                         earthHealthDisplay.innerText = earthHealth;
-                        
                         // NEW: Determine crack type and add it
                         let crackType;
                         if (asteroid.radius <= 8) {
@@ -1374,7 +1372,6 @@
                             crackType = 'large';
                         }
                         addEarthCrack(asteroid, crackType);
-
                         asteroids.splice(i, 1);
                         if (earthHealth <= 0 && !isExploding) {
                            isExploding = true;
@@ -1587,11 +1584,9 @@
                     ctx.closePath();
                 });
             }
-            
             /** NEW: Adds a temporary crack image to the planet's surface. */
             function addEarthCrack(asteroid, crackType) {
                 crackSound.triggerAttackRelease("32n");
-                
                 let selectedImage;
                 switch (crackType) {
                     case 'small':
@@ -1604,11 +1599,9 @@
                         selectedImage = crackImageLarge;
                         break;
                 }
-
                 const impactAngle = Math.atan2(asteroid.y - planet.y, asteroid.x - planet.x);
                 const impactX = planet.x + (planet.radius - 5) * Math.cos(impactAngle); // Position slightly inside the radius
                 const impactY = planet.y + (planet.radius - 5) * Math.sin(impactAngle);
-
                 earthCracks.push({
                     image: selectedImage,
                     x: impactX,
@@ -1617,7 +1610,6 @@
                     timer: 90 // 1.5 seconds at 60fps
                 });
             }
-
             /** NEW: Draws the temporary crack images at a smaller size. */
             function drawCracks() {
                 earthCracks.forEach(crack => {
@@ -1625,18 +1617,16 @@
                         const scale = 0.25; // Draw image at 25% of its original size
                         const w = crack.image.width * scale;
                         const h = crack.image.height * scale;
-
                         ctx.save();
                         ctx.translate(crack.x, crack.y);
                         ctx.rotate(crack.angle + Math.PI / 2); // Align crack with impact direction
                         // Fade out the crack in its last half-second
-                        ctx.globalAlpha = Math.min(1, crack.timer / 30); 
+                        ctx.globalAlpha = Math.min(1, crack.timer / 30);
                         ctx.drawImage(crack.image, -w / 2, -h / 2, w, h);
                         ctx.restore();
                     }
                 });
             }
-
             /** NEW: Draws the lava core based on Earth's health. */
             function drawLavaCore() {
                 if (earthHealth < 100) {
@@ -1657,8 +1647,6 @@
                     }
                 }
             }
-
-
             function drawExplosion() {
                 // Animate the final explosion
                 if (explosionParticles.length === 0 && isExploding) {
@@ -1699,7 +1687,6 @@
                 if (isExploding) {
                     return;
                 }
-
                 // New logic for drawing animated Earth
                 const currentFrameImage = earthFrames[currentEarthFrame];
                 if (currentFrameImage && currentFrameImage.complete) {
@@ -1728,7 +1715,6 @@
                     ctx.closePath();
                     ctx.shadowBlur = 0;
                 }
-                
                 // FIX: Draw lava core on top, but clipped to the planet's shape
                 ctx.save();
                 ctx.beginPath();
@@ -1736,8 +1722,6 @@
                 ctx.clip();
                 drawLavaCore();
                 ctx.restore();
-
-
                 drawCracks(); // Draw temporary cracks over the planet
             }
             // --- Player skin drawing functions (refactored to be centered) ---
@@ -1889,7 +1873,6 @@
                 context.fillText('$', 0, 0);
                 context.restore();
             }
-
             function drawPlayer() {
                 if (auraColor) {
                     ctx.save();
@@ -1915,6 +1898,7 @@
             }
             function drawAsteroids() {
                 asteroids.forEach(asteroid => {
+                    // Draw the trail effect first
                     ctx.save();
                     ctx.globalAlpha = 0.5;
                     const trailLength = 20;
@@ -1943,20 +1927,38 @@
                         ctx.fill();
                     }
                     ctx.restore();
-                    ctx.shadowColor = 'rgba(255, 0, 0, 0.7)';
-                    ctx.shadowBlur = 15;
-                    ctx.beginPath();
-                    const gradient = ctx.createRadialGradient(
-                        asteroid.x, asteroid.y, asteroid.radius * 0.2,
-                        asteroid.x, asteroid.y, asteroid.radius
-                    );
-                    gradient.addColorStop(0, '#a9a9a9');
-                    gradient.addColorStop(1, '#505050');
-                    ctx.arc(asteroid.x, asteroid.y, asteroid.radius, 0, Math.PI * 2);
-                    ctx.fillStyle = gradient;
-                    ctx.fill();
-                    ctx.closePath();
-                    ctx.shadowBlur = 0;
+
+                    // Draw the asteroid skin image on top
+                    if (asteroid.skin && asteroid.skin.complete) {
+                        ctx.save();
+                        ctx.translate(asteroid.x, asteroid.y);
+                        asteroid.angle = (asteroid.angle || 0) + 0.005; // Add slow rotation
+                        ctx.rotate(asteroid.angle);
+                        ctx.drawImage(
+                            asteroid.skin,
+                            -asteroid.radius,
+                            -asteroid.radius,
+                            asteroid.radius * 2,
+                            asteroid.radius * 2
+                        );
+                        ctx.restore();
+                    } else {
+                        // Fallback drawing if image is not loaded
+                        ctx.shadowColor = 'rgba(255, 0, 0, 0.7)';
+                        ctx.shadowBlur = 15;
+                        ctx.beginPath();
+                        const gradient = ctx.createRadialGradient(
+                            asteroid.x, asteroid.y, asteroid.radius * 0.2,
+                            asteroid.x, asteroid.y, asteroid.radius
+                        );
+                        gradient.addColorStop(0, '#a9a9a9');
+                        gradient.addColorStop(1, '#505050');
+                        ctx.arc(asteroid.x, asteroid.y, asteroid.radius, 0, Math.PI * 2);
+                        ctx.fillStyle = gradient;
+                        ctx.fill();
+                        ctx.closePath();
+                        ctx.shadowBlur = 0;
+                    }
                 });
             }
             function drawRedBombs() {
@@ -2091,7 +2093,15 @@
                 let angleToCenter = Math.atan2(planet.y - y, planet.x - x);
                 let vx = speed * Math.cos(angleToCenter);
                 let vy = speed * Math.sin(angleToCenter);
-                asteroids.push({ x, y, radius, vx, vy, color: '#808080' });
+                let skin;
+                if (radius <= 8) {
+                    skin = smallAsteroidImage;
+                } else if (radius <= 12) {
+                    skin = mediumAsteroidImage;
+                } else {
+                    skin = largeAsteroidImage;
+                }
+                asteroids.push({ x, y, radius, vx, vy, skin });
             }
             function spawnRedBomb() {
                 let radius = 10;
@@ -2309,7 +2319,6 @@
                     <button class="purchase-button" id="coin-multiplier-upgrade-btn" ${!canUpgradeCoinMultiplier ? 'disabled' : ''}>Upgrade</button>
                 `;
                 powerupsOptionsContainer.appendChild(coinMultiplierUpgradeDiv);
-
                 // Add event listeners to the new buttons
                 document.getElementById('health-upgrade-btn').addEventListener('click', () => {
                     if (canUpgradeHealth) {
