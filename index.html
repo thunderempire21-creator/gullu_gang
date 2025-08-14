@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -739,6 +740,12 @@
             const lavaSoundCooldown = 0.5;
             let isExploding = false;
 
+            // --- Earth Animation Variables ---
+            let earthFrames = [];
+            const earthFrameCount = 6;
+            let currentEarthFrame = 0;
+            const earthAnimationSpeed = 15; // Slower animation speed
+
 
             const planet = { x: 0, y: 0, radius: 50 };
             let earthCracks = []; // New array to store crack objects
@@ -763,7 +770,15 @@
             // --- Player Skin Definitions ---
             const ironManImage = new Image();
             // PASTE YOUR IMAGE LINK HERE
-            ironManImage.src = 'images/Ironman.png';
+            ironManImage.src = 'images/ironman.png';
+
+            // --- Earth Animation Frames ---
+            for (let i = 1; i <= earthFrameCount; i++) {
+                const frameImage = new Image();
+                // Loading the 6 frames for the Earth animation
+                frameImage.src = `images/frame${i}.png`;
+                earthFrames.push(frameImage);
+            }
 
             const SKINS = {
                 'ironMan': { name: 'Iron Gullu', price: 0, draw: drawIronMan },
@@ -1273,6 +1288,11 @@
                     animationFrameId = requestAnimationFrame(gameLoop);
                     return;
                 }
+                
+                // Update Earth animation frame
+                if (frameCount % earthAnimationSpeed === 0) {
+                    currentEarthFrame = (currentEarthFrame + 1) % earthFrameCount;
+                }
 
                 updatePlayer();
                 updateObjects();
@@ -1730,18 +1750,35 @@
                     return;
                 }
 
-                ctx.shadowColor = '#00ccff';
-                ctx.shadowBlur = 30;
-                const gradient = ctx.createRadialGradient(planet.x, planet.y, 0, planet.x, planet.y, planet.radius);
-                gradient.addColorStop(0, '#4CAF50');
-                gradient.addColorStop(0.7, '#2196F3');
-                gradient.addColorStop(1, '#00ccff');
-                ctx.beginPath();
-                ctx.arc(planet.x, planet.y, planet.radius, 0, Math.PI * 2);
-                ctx.fillStyle = gradient;
-                ctx.fill();
-                ctx.closePath();
-                ctx.shadowBlur = 0;
+                // New logic for drawing animated Earth
+                const currentFrameImage = earthFrames[currentEarthFrame];
+                if (currentFrameImage && currentFrameImage.complete) {
+                    ctx.shadowColor = '#00ccff';
+                    ctx.shadowBlur = 30;
+                    ctx.drawImage(
+                        currentFrameImage,
+                        planet.x - planet.radius,
+                        planet.y - planet.radius,
+                        planet.radius * 2,
+                        planet.radius * 2
+                    );
+                    ctx.shadowBlur = 0;
+                } else {
+                    // Fallback to the old gradient if images are not loaded
+                    ctx.shadowColor = '#00ccff';
+                    ctx.shadowBlur = 30;
+                    const gradient = ctx.createRadialGradient(planet.x, planet.y, 0, planet.x, planet.y, planet.radius);
+                    gradient.addColorStop(0, '#4CAF50');
+                    gradient.addColorStop(0.7, '#2196F3');
+                    gradient.addColorStop(1, '#00ccff');
+                    ctx.beginPath();
+                    ctx.arc(planet.x, planet.y, planet.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = gradient;
+                    ctx.fill();
+                    ctx.closePath();
+                    ctx.shadowBlur = 0;
+                }
+
 
                 drawEarthDamage(); // Draw damage over the base planet
             }
