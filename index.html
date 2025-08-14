@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -55,6 +54,25 @@
             z-index: 100;
         }
 
+        /* Loading Spinner */
+        #loading-overlay {
+            background: radial-gradient(ellipse at center, #1b2735 0%, #090a0f 100%);
+        }
+        .loader {
+            border: 8px solid #4a4a6a; /* Darker grey */
+            border-top: 8px solid #00ffcc; /* Neon accent */
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+
         /* Updated styling for the start screen */
         #start-screen {
             position: absolute;
@@ -73,6 +91,16 @@
             gap: 4rem;
             padding: 1rem;
             box-sizing: border-box;
+        }
+
+        #start-screen-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4rem;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
         }
 
         #start-screen h1 {
@@ -514,11 +542,16 @@
     </style>
 </head>
 <body>
+    <div id="loading-overlay" class="ui-overlay" style="display: flex; z-index: 9999;">
+        <div class="loader"></div>
+    </div>
     <div class="game-container">
         <!-- Updated Start Screen -->
         <div id="start-screen">
-            <h1>Avenger: Gullu Games</h1>
-            <button id="start-play-btn" class="button">Play</button>
+             <div id="start-screen-content">
+                <h1>Avenger: Gullu Games</h1>
+                <button id="start-play-btn" class="button">Play</button>
+            </div>
         </div>
 
         <!-- Game UI Elements -->
@@ -672,6 +705,8 @@
 
             const startScreen = document.getElementById('start-screen');
             const startPlayBtn = document.getElementById('start-play-btn');
+            const loadingOverlay = document.getElementById('loading-overlay');
+            const startScreenContent = document.getElementById('start-screen-content');
 
             const introOverlay = document.getElementById('intro-overlay');
             const introCanvas = document.getElementById('intro-canvas');
@@ -766,20 +801,7 @@
             let lastCrashTime = 0;
             let lastAsteroidHitTime = 0;
             const soundCooldown = 0.05;
-
-            // --- Player Skin Definitions ---
-            const ironManImage = new Image();
-            // PASTE YOUR IMAGE LINK HERE
-            ironManImage.src = 'images/Ironman.png';
-
-            // --- Earth Animation Frames ---
-            for (let i = 1; i <= earthFrameCount; i++) {
-                const frameImage = new Image();
-                // Loading the 6 frames for the Earth animation
-                frameImage.src = `images/frame${i}.png`;
-                earthFrames.push(frameImage);
-            }
-
+            
             const SKINS = {
                 'ironMan': { name: 'Iron Gullu', price: 0, draw: drawIronMan },
                 'greenHulk': { name: 'Green Gullu', price: 70, draw: drawGreenHulk },
@@ -821,6 +843,48 @@
             let healthUpgradeLevel = parseInt(localStorage.getItem('healthUpgradeLevel') || 0);
             let doubleBeamUpgradeLevel = parseInt(localStorage.getItem('doubleBeamUpgradeLevel') || 0);
             let coinMultiplierUpgradeLevel = parseInt(localStorage.getItem('coinMultiplierUpgradeLevel') || 0);
+
+            // --- Asset Loading ---
+            const assetsToLoad = [];
+            const ironManImage = new Image();
+            ironManImage.src = 'images/Ironman.png'; // Make sure this path is correct
+            assetsToLoad.push(ironManImage);
+
+            for (let i = 1; i <= earthFrameCount; i++) {
+                const frameImage = new Image();
+                frameImage.src = `images/frame${i}.png`; // Assumes images are in the same folder
+                earthFrames.push(frameImage);
+                assetsToLoad.push(frameImage);
+            }
+
+            let loadedAssets = 0;
+            const totalAssets = assetsToLoad.length;
+
+            function assetLoaded() {
+                loadedAssets++;
+                if (loadedAssets >= totalAssets) {
+                    // All assets are loaded, hide loader and show start screen
+                    setTimeout(() => { // Small delay for smoother transition
+                        loadingOverlay.style.display = 'none';
+                        startScreenContent.style.visibility = 'visible';
+                        startScreenContent.style.opacity = 1;
+                    }, 500);
+                }
+            }
+
+            assetsToLoad.forEach(asset => {
+                // Check if the image is already cached by the browser
+                if (asset.complete) {
+                    assetLoaded();
+                } else {
+                    asset.onload = assetLoaded;
+                    // It's good practice to also handle errors
+                    asset.onerror = () => {
+                        console.error("Failed to load asset:", asset.src);
+                        assetLoaded(); // Still count it as "loaded" to not block the game
+                    };
+                }
+            });
 
 
             // Helper functions for TTS audio playback
@@ -2616,9 +2680,9 @@
                 }
             });
 
-            showScreen('startScreen');
+            // Don't show the start screen immediately, wait for assets to load.
+            // showScreen('startScreen');
         };
     </script>
 </body>
 </html>
-
