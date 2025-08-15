@@ -24,7 +24,7 @@
             display: block;
             border: 2px solid #5a5a7a;
             box-shadow: 0 0 25px rgba(0, 255, 255, 0.4);
-            background: radial-gradient(circle at center, #1a1a33 0%, #0d0d1a 100%);
+            background-color: #0d0d1a; /* Set a base background color */
             z-index: 1;
         }
         .game-container {
@@ -35,6 +35,7 @@
             position: relative;
             width: 100%;
             height: 100%;
+            background-color: #0d0d1a;
         }
         .ui-overlay {
             position: absolute;
@@ -482,8 +483,8 @@
     <div class="game-container">
         <div id="start-screen">
              <div id="start-screen-content">
-                 <h1>Avenger: Gullu Games</h1>
-                 <button id="start-play-btn" class="button">Play</button>
+                  <h1>Avenger: Gullu Games</h1>
+                  <button id="start-play-btn" class="button">Play</button>
              </div>
         </div>
         <div id="game-info-container">
@@ -743,6 +744,9 @@
             const blastFrameCount = 15;
             let currentBlastFrame = 0;
             const blastAnimationSpeed = 4;
+            // --- Nebula Background Variables ---
+            const nebulaImage = new Image();
+            let nebula = { x: 0, y: 0, speedX: 0.1, speedY: 0.05 };
             let player = {
                 x: 0,
                 y: 0,
@@ -803,6 +807,10 @@
             // --- Asset Loading ---
             const assetsToLoad = [];
             const beamImages = {};
+
+            nebulaImage.src = 'images/nebula3.png';
+            nebulaImage.onerror = () => nebulaImage.src = 'https://placehold.co/800x800/1a1a33/ffffff?text=Nebula+Not+Found';
+            assetsToLoad.push(nebulaImage);
 
             const ironManImage = new Image();
             ironManImage.src = 'images/Ironman.png';
@@ -960,29 +968,29 @@
 
              // Green Aura animation frames
             const greenAuraFrameURLs = [
-             'images/green1.png', 'images/green2.png', 'images/green3.png', 'images/green4.png', 'images/green5.png',
-             'images/green6.png', 'images/green7.png', 'images/green8.png', 'images/green9.png', 'images/green10.png',
-             'images/green11.png', 'images/green12.png', 'images/green13.png'
+                 'images/green1.png', 'images/green2.png', 'images/green3.png', 'images/green4.png', 'images/green5.png',
+                 'images/green6.png', 'images/green7.png', 'images/green8.png', 'images/green9.png', 'images/green10.png',
+                 'images/green11.png', 'images/green12.png', 'images/green13.png'
             ];
             for (let i = 0; i < greenAuraFrameCount; i++) {
-             const frameImage = new Image();
-             frameImage.src = greenAuraFrameURLs[i];
-             frameImage.onerror = () => frameImage.src = `https://placehold.co/50x50/00ff00/ffffff?text=G${i+1}`;
-             greenAuraFrames.push(frameImage);
-             assetsToLoad.push(frameImage);
+                 const frameImage = new Image();
+                 frameImage.src = greenAuraFrameURLs[i];
+                 frameImage.onerror = () => frameImage.src = `https://placehold.co/50x50/00ff00/ffffff?text=G${i+1}`;
+                 greenAuraFrames.push(frameImage);
+                 assetsToLoad.push(frameImage);
             }
              // Yellow Aura animation frames
             const yellowAuraFrameURLs = [
-             'images/yellow1.png', 'images/yellow2.png', 'images/yellow3.png', 'images/yellow4.png', 'images/yellow5.png',
-             'images/yellow6.png', 'images/yellow7.png', 'images/yellow8.png', 'images/yellow9.png', 'images/yellow10.png',
-             'images/yellow11.png', 'images/yellow12.png'
+                 'images/yellow1.png', 'images/yellow2.png', 'images/yellow3.png', 'images/yellow4.png', 'images/yellow5.png',
+                 'images/yellow6.png', 'images/yellow7.png', 'images/yellow8.png', 'images/yellow9.png', 'images/yellow10.png',
+                 'images/yellow11.png', 'images/yellow12.png'
             ];
             for (let i = 0; i < yellowAuraFrameCount; i++) {
-             const frameImage = new Image();
-             frameImage.src = yellowAuraFrameURLs[i];
-             frameImage.onerror = () => frameImage.src = `https://placehold.co/50x50/ffff00/ffffff?text=Y${i+1}`;
-             yellowAuraFrames.push(frameImage);
-             assetsToLoad.push(frameImage);
+                 const frameImage = new Image();
+                 frameImage.src = yellowAuraFrameURLs[i];
+                 frameImage.onerror = () => frameImage.src = `https://placehold.co/50x50/ffff00/ffffff?text=Y${i+1}`;
+                 yellowAuraFrames.push(frameImage);
+                 assetsToLoad.push(frameImage);
             }
             
              // Ray Aura animation frames
@@ -1402,13 +1410,14 @@
                 if (gamePaused) return;
                 if (isPlayerExploding) {
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    drawNebula();
                     drawStars();
                     drawPlanet();
                     drawPlayerExplosion();
                     if (frameCount % blastAnimationSpeed === 0) {
                         currentBlastFrame++;
                     }
-                    frameCount++; // BUG FIX: Increment frameCount during explosion
+                    frameCount++;
                     animationFrameId = requestAnimationFrame(gameLoop);
                     return;
                 }
@@ -1451,6 +1460,7 @@
                 updateObjects();
                 checkCollisions();
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
+                drawNebula();
                 drawStars();
                 drawPlanet();
                 drawPlayer();
@@ -1547,7 +1557,7 @@
                         addEarthCrack(asteroid, crackType);
                         asteroids.splice(i, 1);
                         if (earthHealth <= 0 && !isExploding) {
-                          isExploding = true;
+                           isExploding = true;
                         }
                     } else if (asteroid.x < -20 || asteroid.x > canvas.width + 20 || asteroid.y < -20 || asteroid.y > canvas.height + 20) {
                         asteroids.splice(i, 1);
@@ -1731,13 +1741,44 @@
             // --- Drawing Functions ---
             function createStars() {
                 stars = [];
-                const starCount = 300;
+                const starCount = 800; // Increased star count
                 for (let i = 0; i < starCount; i++) {
                     stars.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, radius: Math.random() * 1.5, opacity: Math.random() });
                 }
             }
+            function drawNebula() {
+                if (nebulaImage.complete && nebulaImage.width > 0) {
+                    const scale = 0.5; // Size of the single nebula
+                    const scaledWidth = nebulaImage.width * scale;
+                    const scaledHeight = nebulaImage.height * scale;
+
+                    // Update nebula position
+                    nebula.x += nebula.speedX;
+                    nebula.y += nebula.speedY;
+
+                    // Wrap the nebula around the screen
+                    if (nebula.x > canvas.width) nebula.x = -scaledWidth;
+                    if (nebula.x < -scaledWidth) nebula.x = canvas.width;
+                    if (nebula.y > canvas.height) nebula.y = -scaledHeight;
+                    if (nebula.y < -scaledHeight) nebula.y = canvas.height;
+
+                    // Draw the single nebula image
+                    ctx.drawImage(nebulaImage, nebula.x, nebula.y, scaledWidth, scaledHeight);
+                }
+            }
             function drawStars() {
                 stars.forEach(star => {
+                    // Move stars with the background for a parallax effect
+                    star.x -= nebula.speedX * 1.5;
+                    star.y -= nebula.speedY * 1.5;
+
+                    // Wrap stars around the screen edges
+                    if (star.x < 0) star.x = canvas.width;
+                    if (star.y < 0) star.y = canvas.height;
+                    if (star.x > canvas.width) star.x = 0;
+                    if (star.y > canvas.height) star.y = 0;
+
+
                     ctx.beginPath();
                     ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
                     ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`;
@@ -2178,7 +2219,7 @@
                           ctx.shadowBlur = 0;
                       }
                  });
-             }
+            }
             function drawPulse() {
                 if (pulseActive) {
                     ctx.save();
