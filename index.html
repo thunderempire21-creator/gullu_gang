@@ -1486,7 +1486,7 @@
                             pulseActive = true;
                             pulseRadius = planet.radius;
                             auraColor = 'redAura'; // Use a string to identify the animated aura
-                            auraTimer = 1 * 60;
+                            auraTimer = 5 * 60; // 5 seconds at 60fps
                             pulseSynth.triggerAttackRelease("C1", "2n");
                             beamRemoved = true;
                             break;
