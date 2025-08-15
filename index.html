@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
  <html lang="en">
  <head>
@@ -726,7 +728,9 @@
                 'ironMan': { name: 'Iron Gullu', price: 0, draw: drawIronMan },
                 'greenHulk': { name: 'Green Gullu', price: 70, draw: drawGreenHulk },
                 'blackWidow': { name: 'Gullu Widow', price: 100, draw: drawBlackWidow },
-                'captainAmerica': { name: 'Captain Gullu', price: 200, high_score_req: 50, draw: drawCaptainAmerica }
+                'captainAmerica': { name: 'Captain Gullu', price: 200, high_score_req: 50, draw: drawCaptainAmerica },
+                'pantherGullu': { name: 'Panther Gullu', price: 300, high_score_req: 100, draw: drawPantherGullu },
+                'spidyGullu': { name: 'Spidy Gullu', price: 400, high_score_req: 150, draw: drawSpidyGullu }
             };
             let unlockedSkins = JSON.parse(localStorage.getItem('orbitDashUnlockedSkins')) || ['ironMan'];
             // --- Power-up Upgrades ---
@@ -766,11 +770,10 @@
             // --- Asset Loading ---
             const assetsToLoad = [];
             const ironManImage = new Image();
-            ironManImage.src = 'images/Ironman.png';
+            ironManImage.src = 'images/IronMan.png';
             ironManImage.onerror = () => ironManImage.src = 'https://placehold.co/100x100/ff0000/ffffff?text=IronMan';
             assetsToLoad.push(ironManImage);
             
-            // NEW: Hulk, Widow, Captain America images
             const greenHulkImage = new Image();
             greenHulkImage.src = 'images/hulk.png'; 
             greenHulkImage.onerror = () => greenHulkImage.src = 'https://placehold.co/100x100/00ff00/ffffff?text=Hulk';
@@ -785,6 +788,16 @@
             captainAmericaImage.src = 'images/captain.png';
             captainAmericaImage.onerror = () => captainAmericaImage.src = 'https://placehold.co/100x100/0000ff/ffffff?text=Cap';
             assetsToLoad.push(captainAmericaImage);
+            
+            const pantherGulluImage = new Image();
+            pantherGulluImage.src = 'images/panther.png';
+            pantherGulluImage.onerror = () => pantherGulluImage.src = 'https://placehold.co/100x100/8A2BE2/ffffff?text=Panther';
+            assetsToLoad.push(pantherGulluImage);
+
+            const spidyGulluImage = new Image();
+            spidyGulluImage.src = 'images/spidy.png';
+            spidyGulluImage.onerror = () => spidyGulluImage.src = 'https://placehold.co/100x100/FF0000/ffffff?text=Spidy';
+            assetsToLoad.push(spidyGulluImage);
 
 
             // Crack Images
@@ -1638,6 +1651,16 @@
                     context.drawImage(captainAmericaImage, -size, -size, size * 2, size * 2);
                 }
             }
+            function drawPantherGullu(context, size) {
+                if (pantherGulluImage.complete) {
+                    context.drawImage(pantherGulluImage, -size, -size, size * 2, size * 2);
+                }
+            }
+            function drawSpidyGullu(context, size) {
+                if (spidyGulluImage.complete) {
+                    context.drawImage(spidyGulluImage, -size, -size, size * 2, size * 2);
+                }
+            }
             function drawHealthPack(context, size) {
                 const halfSize = size * 0.5;
                 context.save();
@@ -1977,20 +2000,25 @@
                     const isUnlocked = unlockedSkins.includes(key);
                     const isSelected = key === currentSkin;
                     const optionDiv = document.createElement('div');
-                    optionDiv.className = `skin-option ${!isUnlocked && (skin.high_score_req && currentHighScore < skin.high_score_req || coins < skin.price) ? 'locked' : ''} ${isSelected ? 'selected' : ''}`;
+                    optionDiv.className = `skin-option ${!isUnlocked ? 'locked' : ''} ${isSelected ? 'selected' : ''}`;
                     optionDiv.dataset.skinKey = key;
                     let statusText = '';
                     let buttonHtml = '';
+
                     if (isSelected) {
                         statusText = 'Equipped';
                     } else if (isUnlocked) {
                         statusText = 'Unlocked';
                         buttonHtml = `<button class="purchase-button" data-action="equip">Equip</button>`;
-                    } else if (skin.high_score_req && currentHighScore < skin.high_score_req) {
-                        statusText = `High Score of ${skin.high_score_req} Required`;
-                        buttonHtml = `<button class="purchase-button" disabled>Locked</button>`;
                     } else {
-                        statusText = `Cost: ${skin.price} Coins`;
+                        let requirements = [];
+                        if (skin.high_score_req) {
+                            requirements.push(`Score > ${skin.high_score_req}`);
+                        }
+                        if (skin.price) {
+                            requirements.push(`${skin.price} Coins`);
+                        }
+                        statusText = `Requires: ${requirements.join(' & ')}`;
                         buttonHtml = `<button class="purchase-button" data-action="unlock">Unlock</button>`;
                     }
                     optionDiv.innerHTML = `<div class="skin-option-content"><canvas id="skin-canvas-${key}" width="60" height="60"></canvas><h3>${skin.name}</h3></div><span class="unlock-cost">${statusText}</span>${buttonHtml}`;
@@ -1999,6 +2027,7 @@
                 drawShopSkins();
                 document.querySelectorAll('#skins-options-container .purchase-button').forEach(button => {
                     button.addEventListener('click', (e) => {
+                        e.stopPropagation(); // Prevent the whole div from being clicked
                         const key = e.target.closest('.skin-option').dataset.skinKey;
                         const action = e.target.dataset.action;
                         const skin = SKINS[key];
@@ -2008,7 +2037,10 @@
                             localStorage.setItem('orbitDashCurrentSkin', key);
                             generateShopOptions();
                         } else if (action === 'unlock') {
-                            if (coins >= skin.price) {
+                            const hasEnoughCoins = coins >= skin.price;
+                            const hasHighScore = !skin.high_score_req || currentHighScore >= skin.high_score_req;
+
+                            if (hasEnoughCoins && hasHighScore) {
                                 purchaseSound.triggerAttackRelease("C5", "8n");
                                 coins -= skin.price;
                                 localStorage.setItem('orbitDashCoins', coins);
@@ -2020,7 +2052,14 @@
                                 showShopMessage('Success!', `You unlocked the ${skin.name} skin!`);
                             } else {
                                 buttonClickSynth.triggerAttackRelease("C2", "8n");
-                                showShopMessage('Not Enough Coins', `You need ${skin.price} coins to unlock this skin. You only have ${coins} coins. Keep playing!`);
+                                let message = "You don't meet the requirements. ";
+                                if (!hasHighScore) {
+                                    message += `You need a high score of at least ${skin.high_score_req}. `;
+                                }
+                                if (!hasEnoughCoins) {
+                                    message += `You need ${skin.price} coins.`;
+                                }
+                                showShopMessage('Unlock Failed', message);
                             }
                         }
                     });
@@ -2129,7 +2168,9 @@
                     case 'ironMan': return '#CC0000';
                     case 'greenHulk': return '#006400';
                     case 'blackWidow': return '#4d4d4d';
-                    case 'captainAmerica': return '#FFD700';
+                    case 'captainAmerica': return '#0000FF';
+                    case 'pantherGullu': return '#8A2BE2';
+                    case 'spidyGullu': return '#00AEEF';
                     default: return '#00ffcc';
                 }
             }
@@ -2249,3 +2290,5 @@
     </script>
  </body>
  </html>
+
+
