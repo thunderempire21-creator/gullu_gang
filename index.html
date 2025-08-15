@@ -1,7 +1,6 @@
-
 <!DOCTYPE html>
-<html lang="en">
-<head>
+ <html lang="en">
+ <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Avenger: Gullu Games</title>
@@ -433,7 +432,8 @@
             align-items: center;
             text-align: center;
             background-image: url('images/Wow.png');
-            background-size: cover;
+            background-color: #090a0f;
+            background-size: auto;
             background-position: center;
         }
         #intro-title {
@@ -475,8 +475,8 @@
             }
         }
     </style>
-</head>
-<body>
+ </head>
+ <body>
     <div id="loading-overlay" class="ui-overlay" style="display: flex; z-index: 9999;">
         <div class="loader"></div>
     </div>
@@ -484,9 +484,9 @@
         <!-- Updated Start Screen -->
         <div id="start-screen">
              <div id="start-screen-content">
-                <h1>Avenger: Gullu Games</h1>
-                <button id="start-play-btn" class="button">Play</button>
-            </div>
+                 <h1>Avenger: Gullu Games</h1>
+                 <button id="start-play-btn" class="button">Play</button>
+             </div>
         </div>
         <!-- Game UI Elements -->
         <div id="game-info-container">
@@ -591,7 +591,7 @@
                         </p>
                         <p>
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2-2zm-5-3h10v2H7v-2z" fill="#ff3366"/>
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 14c-1.1 0-2-.9-2 2s.9-2 2-2 2 .9 2 2-.9 2-2-2zm-5-3h10v2H7v-2z" fill="#ff3366"/>
                             </svg>
                             <b>Red Bomb:</b> Shooting this will cause a massive pulse wave from the center of the planet, destroying all asteroids on the screen.
                         </p>
@@ -767,19 +767,39 @@
             const assetsToLoad = [];
             const ironManImage = new Image();
             ironManImage.src = 'images/Ironman.png';
+            ironManImage.onerror = () => ironManImage.src = 'https://placehold.co/100x100/ff0000/ffffff?text=IronMan';
             assetsToLoad.push(ironManImage);
+            
+            // NEW: Hulk, Widow, Captain America images
+            const greenHulkImage = new Image();
+            greenHulkImage.src = 'images/hulk.png'; 
+            greenHulkImage.onerror = () => greenHulkImage.src = 'https://placehold.co/100x100/00ff00/ffffff?text=Hulk';
+            assetsToLoad.push(greenHulkImage);
+
+            const blackWidowImage = new Image();
+            blackWidowImage.src = 'images/widow.png';
+            blackWidowImage.onerror = () => blackWidowImage.src = 'https://placehold.co/100x100/000000/ffffff?text=Widow';
+            assetsToLoad.push(blackWidowImage);
+
+            const captainAmericaImage = new Image();
+            captainAmericaImage.src = 'images/captain.png';
+            captainAmericaImage.onerror = () => captainAmericaImage.src = 'https://placehold.co/100x100/0000ff/ffffff?text=Cap';
+            assetsToLoad.push(captainAmericaImage);
+
 
             // Crack Images
             const crackImageSmall = new Image();
             const crackImageMedium = new Image();
             const crackImageLarge = new Image();
             crackImageSmall.src = 'images/crack3.png';
+            crackImageSmall.onerror = () => crackImageSmall.src = 'https://placehold.co/50x50/ffffff/000000?text=Crack';
             crackImageMedium.src = 'images/crack6.png';
-            crackImageLarge.src = 'images/crack6.png'; // FIX: Replaced broken URL
+            crackImageMedium.onerror = () => crackImageMedium.src = 'https://placehold.co/100x100/ffffff/000000?text=Crack';
+            crackImageLarge.src = 'images/crack5.png';
+            crackImageLarge.onerror = () => crackImageLarge.src = 'https://placehold.co/150x150/ffffff/000000?text=Crack';
             assetsToLoad.push(crackImageSmall, crackImageMedium, crackImageLarge);
             
             // Earth Animation Frames
-            // FIX: Replaced all broken earth frame URLs with working coin animation frames as placeholders
             const earthFrameURLs = [
                 'images/frame1.png',
                 'images/frame2.png',
@@ -791,18 +811,21 @@
             for (let i = 0; i < earthFrameCount; i++) {
                 const frameImage = new Image();
                 frameImage.src = earthFrameURLs[i];
+                frameImage.onerror = () => frameImage.src = `https://placehold.co/100x100/3498db/ffffff?text=E${i+1}`;
                 earthFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
 
             // Asteroid skin images
-            // FIX: Replaced broken asteroid URLs with working crack images as placeholders
             const smallAsteroidImage = new Image();
             const mediumAsteroidImage = new Image();
             const largeAsteroidImage = new Image();
             smallAsteroidImage.src = 'images/small.png';
+            smallAsteroidImage.onerror = () => smallAsteroidImage.src = 'https://placehold.co/30x30/964B00/ffffff?text=S';
             mediumAsteroidImage.src = 'images/medium.png';
+            mediumAsteroidImage.onerror = () => mediumAsteroidImage.src = 'https://placehold.co/50x50/964B00/ffffff?text=M';
             largeAsteroidImage.src = 'images/large.png';
+            largeAsteroidImage.onerror = () => largeAsteroidImage.src = 'https://placehold.co/70x70/964B00/ffffff?text=L';
             assetsToLoad.push(smallAsteroidImage, mediumAsteroidImage, largeAsteroidImage);
             
             // Coin animation frames
@@ -817,6 +840,7 @@
             for (let i = 0; i < coinFrameCount; i++) {
                 const frameImage = new Image();
                 frameImage.src = coinFrameURLs[i];
+                frameImage.onerror = () => frameImage.src = `https://placehold.co/50x50/ffd700/000000?text=C${i+1}`;
                 coinFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
@@ -1600,92 +1624,19 @@
                 }
             }
             function drawGreenHulk(context, size) {
-                context.beginPath();
-                context.moveTo(0, -size);
-                context.lineTo(-size * 1.2, size * 0.8);
-                context.lineTo(size * 1.2, size * 0.8);
-                context.fillStyle = '#90EE90';
-                context.shadowColor = '#90EE90';
-                context.shadowBlur = 10;
-                context.fill();
-                context.closePath();
-                context.shadowBlur = 0;
-                context.beginPath();
-                context.arc(0, size * 0.2, size * 0.4, 0, Math.PI * 2);
-                context.fillStyle = '#FFD700';
-                context.shadowColor = '#FFD700';
-                context.shadowBlur = 8;
-                context.fill();
-                context.closePath();
-                context.shadowBlur = 0;
-                context.beginPath();
-                context.moveTo(0, -size);
-                context.lineTo(-size * 1.2, size * 0.8);
-                context.lineTo(size * 1.2, size * 0.8);
-                context.lineTo(0, -size);
-                context.strokeStyle = '#FFD700';
-                context.lineWidth = 2;
-                context.stroke();
-                context.closePath();
+                if (greenHulkImage.complete) {
+                    context.drawImage(greenHulkImage, -size, -size, size * 2, size * 2);
+                }
             }
             function drawBlackWidow(context, size) {
-                context.beginPath();
-                context.moveTo(0, -size);
-                context.lineTo(-size * 1.2, size * 0.8);
-                context.lineTo(size * 1.2, size * 0.8);
-                context.fillStyle = '#333333';
-                context.shadowColor = '#333333';
-                context.shadowBlur = 10;
-                context.fill();
-                context.closePath();
-                context.shadowBlur = 0;
-                context.beginPath();
-                context.arc(0, size * 0.2, size * 0.4, 0, Math.PI * 2);
-                context.fillStyle = '#FFD700';
-                context.shadowColor = '#FFD700';
-                context.shadowBlur = 8;
-                context.fill();
-                context.closePath();
-                context.shadowBlur = 0;
-                context.beginPath();
-                context.moveTo(0, -size);
-                context.lineTo(-size * 1.2, size * 0.8);
-                context.lineTo(size * 1.2, size * 0.8);
-                context.lineTo(0, -size);
-                context.strokeStyle = 'lightgray';
-                context.lineWidth = 2;
-                context.stroke();
-                context.closePath();
+                if (blackWidowImage.complete) {
+                    context.drawImage(blackWidowImage, -size, -size, size * 2, size * 2);
+                }
             }
             function drawCaptainAmerica(context, size) {
-                context.beginPath();
-                context.arc(0, 0, size, 0, Math.PI * 2);
-                context.fillStyle = '#FFFFFF';
-                context.shadowColor = '#FFFFFF';
-                context.shadowBlur = 10;
-                context.fill();
-                context.closePath();
-                context.beginPath();
-                context.arc(0, 0, size * 0.6, 0, Math.PI * 2);
-                context.fillStyle = '#003366';
-                context.shadowColor = '#003366';
-                context.shadowBlur = 10;
-                context.fill();
-                context.closePath();
-                context.beginPath();
-                context.arc(0, 0, size * 0.3, 0, Math.PI * 2);
-                context.fillStyle = '#CC0000';
-                context.shadowColor = '#CC0000';
-                context.shadowBlur = 10;
-                context.fill();
-                context.closePath();
-                context.shadowBlur = 0;
-                context.beginPath();
-                context.arc(0, 0, size, 0, Math.PI * 2);
-                context.strokeStyle = '#FFD700';
-                context.lineWidth = 2;
-                context.stroke();
-                context.closePath();
+                if (captainAmericaImage.complete) {
+                    context.drawImage(captainAmericaImage, -size, -size, size * 2, size * 2);
+                }
             }
             function drawHealthPack(context, size) {
                 const halfSize = size * 0.5;
@@ -2296,6 +2247,5 @@
             });
         };
     </script>
-</body>
-</html>
-
+ </body>
+ </html>
