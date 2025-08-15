@@ -430,7 +430,7 @@
             justify-content: center;
             align-items: center;
             text-align: center;
-            background-image: url('images/Wow.png');
+            background-image: url('https://www.transparenttextures.com/patterns/stardust.png');
             background-color: #090a0f;
             background-size: auto;
             background-position: center;
@@ -721,6 +721,16 @@
             const greenAuraFrameCount = 13;
             let currentGreenAuraFrame = 0;
             const greenAuraAnimationSpeed = 5;
+             // --- Yellow Aura Animation Variables ---
+            let yellowAuraFrames = [];
+            const yellowAuraFrameCount = 12;
+            let currentYellowAuraFrame = 0;
+            const yellowAuraAnimationSpeed = 5;
+            // --- Ray Aura Animation Variables ---
+            let rayAuraFrames = [];
+            const rayAuraFrameCount = 5;
+            let currentRayAuraFrame = 0;
+            const rayAuraAnimationSpeed = 10;
             // --- Wrench Animation Variables ---
             let wrenchFrames = [];
             const wrenchFrameCount = 5;
@@ -953,6 +963,31 @@
                  frameImage.onerror = () => frameImage.src = `https://placehold.co/50x50/00ff00/ffffff?text=G${i+1}`;
                  greenAuraFrames.push(frameImage);
                  assetsToLoad.push(frameImage);
+            }
+             // Yellow Aura animation frames
+            const yellowAuraFrameURLs = [
+                 'images/yellow1.png', 'images/yellow2.png', 'images/yellow3.png', 'images/yellow4.png', 'images/yellow5.png',
+                 'images/yellow6.png', 'images/yellow7.png', 'images/yellow8.png', 'images/yellow9.png', 'images/yellow10.png',
+                 'images/yellow11.png', 'images/yellow12.png'
+            ];
+            for (let i = 0; i < yellowAuraFrameCount; i++) {
+                 const frameImage = new Image();
+                 frameImage.src = yellowAuraFrameURLs[i];
+                 frameImage.onerror = () => frameImage.src = `https://placehold.co/50x50/ffff00/ffffff?text=Y${i+1}`;
+                 yellowAuraFrames.push(frameImage);
+                 assetsToLoad.push(frameImage);
+            }
+            
+             // Ray Aura animation frames
+            const rayAuraFrameURLs = [
+                'images/ray1.png', 'images/ray2.png', 'images/ray3.png', 'images/ray4.png', 'images/ray5.png'
+            ];
+            for (let i = 0; i < rayAuraFrameCount; i++) {
+                const frameImage = new Image();
+                frameImage.src = rayAuraFrameURLs[i];
+                frameImage.onerror = () => frameImage.src = `https://placehold.co/50x50/ffff00/ffffff?text=RAY${i+1}`;
+                rayAuraFrames.push(frameImage);
+                assetsToLoad.push(frameImage);
             }
 
              // Wrench animation frames
@@ -1366,6 +1401,12 @@
                 if (frameCount % greenAuraAnimationSpeed === 0) {
                     currentGreenAuraFrame = (currentGreenAuraFrame + 1) % greenAuraFrameCount;
                 }
+                 if (frameCount % yellowAuraAnimationSpeed === 0) {
+                    currentYellowAuraFrame = (currentYellowAuraFrame + 1) % yellowAuraFrameCount;
+                }
+                 if (frameCount % rayAuraAnimationSpeed === 0) {
+                    currentRayAuraFrame = (currentRayAuraFrame + 1) % rayAuraFrameCount;
+                }
                 if (frameCount % wrenchAnimationSpeed === 0) {
                     currentWrenchFrame = (currentWrenchFrame + 1) % wrenchFrameCount;
                 }
@@ -1469,7 +1510,7 @@
                         addEarthCrack(asteroid, crackType);
                         asteroids.splice(i, 1);
                         if (earthHealth <= 0 && !isExploding) {
-                           isExploding = true;
+                          isExploding = true;
                         }
                     } else if (asteroid.x < -20 || asteroid.x > canvas.width + 20 || asteroid.y < -20 || asteroid.y > canvas.height + 20) {
                         asteroids.splice(i, 1);
@@ -1545,8 +1586,8 @@
                         if (distance(beam.x, beam.y, powerUp.x, powerUp.y) < beam.size + powerUp.radius) {
                             beams.splice(i, 1);
                             powerUps.splice(j, 1);
-                            auraColor = '#FFFF00';
-                            auraTimer = 10 * 60;
+                            auraColor = 'rayAura';
+                            auraTimer = (UPGRADES.doubleBeam.base_duration + (UPGRADES.doubleBeam.level_duration_increase * doubleBeamUpgradeLevel)) * 60;
                             shimmerSynth.triggerAttackRelease("C5", "8n");
                             if (!doubleBeamActive) {
                                 doubleBeamActive = true;
@@ -1590,8 +1631,8 @@
                         if (distance(beam.x, beam.y, coinMultiplier.x, coinMultiplier.y) < beam.size + coinMultiplier.radius) {
                             beams.splice(i, 1);
                             coinMultipliers.splice(j, 1);
-                            auraColor = '#FFD700';
-                            auraTimer = 2 * 60;
+                            auraColor = 'yellowAura';
+                            auraTimer = (UPGRADES.coinMultiplier.base_duration + (UPGRADES.coinMultiplier.level_duration_increase * coinMultiplierUpgradeLevel)) * 60;
                             coinSound.triggerAttackRelease("G6", "4n");
                             if (!doubleCoinsActive) {
                                 doubleCoinsActive = true;
@@ -1871,6 +1912,18 @@
                          }
                      } else if (auraColor === 'greenAura') {
                          const currentFrameImage = greenAuraFrames[currentGreenAuraFrame];
+                         if (currentFrameImage && currentFrameImage.complete) {
+                             const auraSize = player.size * 4;
+                             ctx.drawImage(currentFrameImage, -auraSize / 2, -auraSize / 2, auraSize, auraSize);
+                         }
+                     } else if (auraColor === 'yellowAura') {
+                         const currentFrameImage = yellowAuraFrames[currentYellowAuraFrame];
+                         if (currentFrameImage && currentFrameImage.complete) {
+                             const auraSize = player.size * 4;
+                             ctx.drawImage(currentFrameImage, -auraSize / 2, -auraSize / 2, auraSize, auraSize);
+                         }
+                     } else if (auraColor === 'rayAura') {
+                         const currentFrameImage = rayAuraFrames[currentRayAuraFrame];
                          if (currentFrameImage && currentFrameImage.complete) {
                              const auraSize = player.size * 4;
                              ctx.drawImage(currentFrameImage, -auraSize / 2, -auraSize / 2, auraSize, auraSize);
