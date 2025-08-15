@@ -772,6 +772,8 @@
                        
            // --- Asset Loading ---
            const assetsToLoad = [];
+           const beamImages = {};
+
            const ironManImage = new Image();
            ironManImage.src = 'images/Ironman.png';
            ironManImage.onerror = () => ironManImage.src = 'https://placehold.co/100x100/ff0000/ffffff?text=IronMan';
@@ -801,6 +803,25 @@
            spidyGulluImage.src = 'images/spidy.png';
            spidyGulluImage.onerror = () => spidyGulluImage.src = 'https://placehold.co/100x100/FF0000/ffffff?text=Spidy';
            assetsToLoad.push(spidyGulluImage);
+
+           // Beam Images
+           beamImages['ironMan'] = new Image();
+           beamImages['ironMan'].src = 'images/beam1.png';
+           beamImages['greenHulk'] = new Image();
+           beamImages['greenHulk'].src = 'images/beam2.png';
+           beamImages['blackWidow'] = new Image();
+           beamImages['blackWidow'].src = 'images/beam3.png';
+           beamImages['captainAmerica'] = new Image();
+           beamImages['captainAmerica'].src = 'images/beam4.png';
+           beamImages['pantherGullu'] = new Image();
+           beamImages['pantherGullu'].src = 'images/beam5.png';
+           beamImages['spidyGullu'] = new Image();
+           beamImages['spidyGullu'].src = 'images/beam6.png';
+
+           for (const key in beamImages) {
+               beamImages[key].onerror = () => beamImages[key].src = `https://placehold.co/20x20/ffffff/000000?text=B`;
+               assetsToLoad.push(beamImages[key]);
+           }
 
            // Crack Images
            const crackImageSmall = new Image();
@@ -1888,18 +1909,27 @@
                    }
                });
            }
-           function drawBeams() {
-               beams.forEach(beam => {
-                   ctx.beginPath();
-                   ctx.arc(beam.x, beam.y, beam.size, 0, Math.PI * 2);
-                   ctx.fillStyle = beam.color;
-                   ctx.shadowColor = beam.color;
-                   ctx.shadowBlur = 10;
-                   ctx.fill();
-                   ctx.closePath();
-                   ctx.shadowBlur = 0;
-               });
-           }
+            function drawBeams() {
+                beams.forEach(beam => {
+                    if (beam.image && beam.image.complete) {
+                        ctx.save();
+                        ctx.shadowColor = '#fff';
+                        ctx.shadowBlur = 10;
+                        ctx.drawImage(beam.image, beam.x - beam.size, beam.y - beam.size, beam.size * 2, beam.size * 2);
+                        ctx.restore();
+                    } else {
+                        // Fallback circle drawing
+                        ctx.beginPath();
+                        ctx.arc(beam.x, beam.y, beam.size, 0, Math.PI * 2);
+                        ctx.fillStyle = '#00ffcc';
+                        ctx.shadowColor = '#00ffcc';
+                        ctx.shadowBlur = 10;
+                        ctx.fill();
+                        ctx.closePath();
+                        ctx.shadowBlur = 0;
+                    }
+                });
+            }
            function drawPulse() {
                if (pulseActive) {
                    ctx.save();
@@ -2195,30 +2225,22 @@
                powerupsTabBtn.classList.remove('active');
                generateShopOptions();
            }
-           function getBeamColor() {
-               switch(player.skin) {
-                   case 'ironMan': return '#CC0000';
-                   case 'greenHulk': return '#006400';
-                   case 'blackWidow': return '#4d4d4d';
-                   case 'captainAmerica': return '#0000FF';
-                   case 'pantherGullu': return '#8A2BE2';
-                   case 'spidyGullu': return '#00AEEF';
-                   default: return '#00ffcc';
-               }
+           function getBeamImage() {
+               return beamImages[player.skin] || null;
            }
            function fireBeam() {
                beamSynth.triggerAttackRelease("G5", "16n");
                const speed = 8;
                const shipAngle = player.angle + Math.PI / 2;
-               const beamColor = getBeamColor();
+               const beamImage = getBeamImage();
                if (doubleBeamActive) {
                    const offsetAngle = Math.PI / 16;
-                   beams.push({ x: player.x, y: player.y, vx: speed * Math.cos(shipAngle - offsetAngle), vy: speed * Math.sin(shipAngle - offsetAngle), size: 7, color: beamColor });
-                   beams.push({ x: player.x, y: player.y, vx: speed * Math.cos(shipAngle + offsetAngle), vy: speed * Math.sin(shipAngle + offsetAngle), size: 7, color: beamColor });
+                   beams.push({ x: player.x, y: player.y, vx: speed * Math.cos(shipAngle - offsetAngle), vy: speed * Math.sin(shipAngle - offsetAngle), size: 10, image: beamImage });
+                   beams.push({ x: player.x, y: player.y, vx: speed * Math.cos(shipAngle + offsetAngle), vy: speed * Math.sin(shipAngle + offsetAngle), size: 10, image: beamImage });
                } else {
                    const vx = speed * Math.cos(shipAngle);
                    const vy = speed * Math.sin(shipAngle);
-                   beams.push({ x: player.x, y: player.y, vx, vy, size: 7, color: beamColor });
+                   beams.push({ x: player.x, y: player.y, vx, vy, size: 10, image: beamImage });
                }
            }
            function showInstructions() {
