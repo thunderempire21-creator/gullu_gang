@@ -713,6 +713,11 @@
            const redBombFrameCount = 5;
            let currentRedBombFrame = 0;
            const redBombAnimationSpeed = 10;
+           // --- Health Animation Variables ---
+           let heartFrames = [];
+           const heartFrameCount = 6;
+           let currentHeartFrame = 0;
+           const heartAnimationSpeed = 10;
            let player = {
                x: 0,
                y: 0,
@@ -894,6 +899,23 @@
                frameImage.src = redBombFrameURLs[i];
                frameImage.onerror = () => frameImage.src = `https://placehold.co/50x50/ff0000/ffffff?text=B${i+1}`;
                redBombFrames.push(frameImage);
+               assetsToLoad.push(frameImage);
+           }
+
+           // Health Pack animation frames
+           const heartFrameURLs = [
+               'images/heart1.png',
+               'images/heart2.png',
+               'images/heart3.png',
+               'images/heart4.png',
+               'images/heart5.png',
+               'images/heart6.png'
+           ];
+           for (let i = 0; i < heartFrameCount; i++) {
+               const frameImage = new Image();
+               frameImage.src = heartFrameURLs[i];
+               frameImage.onerror = () => frameImage.src = `https://placehold.co/50x50/00ff00/ffffff?text=H${i+1}`;
+               heartFrames.push(frameImage);
                assetsToLoad.push(frameImage);
            }
 
@@ -1281,6 +1303,9 @@
                }
                if (frameCount % redBombAnimationSpeed === 0) {
                    currentRedBombFrame = (currentRedBombFrame + 1) % redBombFrameCount;
+               }
+               if (frameCount % heartAnimationSpeed === 0) {
+                   currentHeartFrame = (currentHeartFrame + 1) % heartFrameCount;
                }
                updatePlayer();
                updateObjects();
@@ -1704,16 +1729,25 @@
                }
            }
            function drawHealthPack(context, size) {
-               const halfSize = size * 0.5;
-               context.save();
-               context.translate(0, 0);
-               context.fillStyle = '#00FF00';
-               context.shadowColor = '#00FF00';
-               context.shadowBlur = 10;
-               context.fillRect(-halfSize, -size * 0.2, size, size * 0.4);
-               context.fillRect(-size * 0.2, -halfSize, size * 0.4, size);
-               context.fill();
-               context.restore();
+               const firstHeartImage = heartFrames[0];
+               if (firstHeartImage && firstHeartImage.complete) {
+                   context.save();
+                   context.translate(0, 0);
+                   context.drawImage(firstHeartImage, -size, -size, size * 2, size * 2);
+                   context.restore();
+               } else {
+                   // Fallback drawing
+                   const halfSize = size * 0.5;
+                   context.save();
+                   context.translate(0, 0);
+                   context.fillStyle = '#00FF00';
+                   context.shadowColor = '#00FF00';
+                   context.shadowBlur = 10;
+                   context.fillRect(-halfSize, -size * 0.2, size, size * 0.4);
+                   context.fillRect(-size * 0.2, -halfSize, size * 0.4, size);
+                   context.fill();
+                   context.restore();
+               }
            }
            function drawDoubleBeam(context, size) {
                const radius = size * 0.4;
@@ -1864,22 +1898,33 @@
                    ctx.restore();
                });
                healthPacks.forEach(healthPack => {
-                   const size = healthPack.radius;
-                   ctx.save();
-                   ctx.translate(healthPack.x, healthPack.y);
-                   ctx.beginPath();
-                   ctx.moveTo(0, size);
-                   ctx.lineTo(-size, size / 2);
-                   ctx.lineTo(-size, -size / 2);
-                   ctx.lineTo(0, -size);
-                   ctx.lineTo(size, -size / 2);
-                   ctx.lineTo(size, size / 2);
-                   ctx.lineTo(0, size);
-                   ctx.fillStyle = '#00FF00';
-                   ctx.shadowColor = '#00FF00';
-                   ctx.shadowBlur = 10;
-                   ctx.fill();
-                   ctx.restore();
+                   const currentFrameImage = heartFrames[currentHeartFrame];
+                   if (currentFrameImage && currentFrameImage.complete) {
+                       const radius = healthPack.radius;
+                       ctx.save();
+                       ctx.shadowColor = '#00FF00';
+                       ctx.shadowBlur = 15;
+                       ctx.drawImage(currentFrameImage, healthPack.x - radius, healthPack.y - radius, radius * 2, radius * 2);
+                       ctx.restore();
+                   } else {
+                       // Fallback drawing
+                       const size = healthPack.radius;
+                       ctx.save();
+                       ctx.translate(healthPack.x, healthPack.y);
+                       ctx.beginPath();
+                       ctx.moveTo(0, size);
+                       ctx.lineTo(-size, size / 2);
+                       ctx.lineTo(-size, -size / 2);
+                       ctx.lineTo(0, -size);
+                       ctx.lineTo(size, -size / 2);
+                       ctx.lineTo(size, size / 2);
+                       ctx.lineTo(0, size);
+                       ctx.fillStyle = '#00FF00';
+                       ctx.shadowColor = '#00FF00';
+                       ctx.shadowBlur = 10;
+                       ctx.fill();
+                       ctx.restore();
+                   }
                });
                coinMultipliers.forEach(coinMultiplier => {
                    const radius = coinMultiplier.radius;
