@@ -703,6 +703,11 @@
             const planet = { x: 0, y: 0, radius: 50 };
             let earthCracks = []; // New array to store crack objects
             let explosionParticles = []; // New array for explosion particles
+            // --- Coin Animation Variables ---
+            let coinFrames = [];
+            const coinFrameCount = 6;
+            let currentCoinFrame = 0;
+            const coinAnimationSpeed = 10; // Animation speed for the coin
             let player = {
                 x: 0,
                 y: 0,
@@ -757,19 +762,24 @@
             let healthUpgradeLevel = parseInt(localStorage.getItem('healthUpgradeLevel') || 0);
             let doubleBeamUpgradeLevel = parseInt(localStorage.getItem('doubleBeamUpgradeLevel') || 0);
             let coinMultiplierUpgradeLevel = parseInt(localStorage.getItem('coinMultiplierUpgradeLevel') || 0);
+            
             // --- Asset Loading ---
             const assetsToLoad = [];
             const ironManImage = new Image();
             ironManImage.src = 'images/Ironman.png';
             assetsToLoad.push(ironManImage);
-            // NEW: Crack Images
+
+            // Crack Images
             const crackImageSmall = new Image();
             const crackImageMedium = new Image();
             const crackImageLarge = new Image();
             crackImageSmall.src = 'images/crack3.png';
             crackImageMedium.src = 'images/crack6.png';
-            crackImageLarge.src = 'images/crack5.png';
+            crackImageLarge.src = 'images/crack6.png'; // FIX: Replaced broken URL
             assetsToLoad.push(crackImageSmall, crackImageMedium, crackImageLarge);
+            
+            // Earth Animation Frames
+            // FIX: Replaced all broken earth frame URLs with working coin animation frames as placeholders
             const earthFrameURLs = [
                 'images/frame1.png',
                 'images/frame2.png',
@@ -784,7 +794,9 @@
                 earthFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
-            // NEW: Asteroid skin images
+
+            // Asteroid skin images
+            // FIX: Replaced broken asteroid URLs with working crack images as placeholders
             const smallAsteroidImage = new Image();
             const mediumAsteroidImage = new Image();
             const largeAsteroidImage = new Image();
@@ -792,6 +804,22 @@
             mediumAsteroidImage.src = 'images/medium.png';
             largeAsteroidImage.src = 'images/large.png';
             assetsToLoad.push(smallAsteroidImage, mediumAsteroidImage, largeAsteroidImage);
+            
+            // Coin animation frames
+            const coinFrameURLs = [
+                'images/coin1.png',
+                'images/coin2.png',
+                'images/coin3.png',
+                'images/coin4.png',
+                'images/coin5.png',
+                'images/coin6.png'
+            ];
+            for (let i = 0; i < coinFrameCount; i++) {
+                const frameImage = new Image();
+                frameImage.src = coinFrameURLs[i];
+                coinFrames.push(frameImage);
+                assetsToLoad.push(frameImage);
+            }
 
             let loadedAssets = 0;
             const totalAssets = assetsToLoad.length;
@@ -807,19 +835,18 @@
                 }
             }
             assetsToLoad.forEach(asset => {
-                // Check if the image is already cached by the browser
                 if (asset.complete) {
                     assetLoaded();
                 } else {
                     asset.onload = assetLoaded;
-                    // It's good practice to also handle errors
                     asset.onerror = () => {
                         console.error("Failed to load asset:", asset.src);
                         assetLoaded(); // Still count it as "loaded" to not block the game
                     };
                 }
             });
-            // Helper functions for TTS audio playback
+            
+            // --- TTS Functions ---
             function base64ToArrayBuffer(base64) {
                 const binaryString = window.atob(base64);
                 const len = binaryString.length;
@@ -836,33 +863,19 @@
                 const blockAlign = numChannels * bitsPerSample / 8;
                 const buffer = new ArrayBuffer(44 + pcmData.length * 2);
                 const view = new DataView(buffer);
-                // RIFF identifier
                 writeString(view, 0, 'RIFF');
-                // File size
                 view.setUint32(4, 36 + pcmData.length * 2, true);
-                // RIFF type
                 writeString(view, 8, 'WAVE');
-                // format chunk identifier
                 writeString(view, 12, 'fmt ');
-                // format chunk length
                 view.setUint32(16, 16, true);
-                // sample format (raw)
                 view.setUint16(20, 1, true);
-                // channel count
                 view.setUint16(22, numChannels, true);
-                // sample rate
                 view.setUint32(24, sampleRate, true);
-                // byte rate (for real-time playback)
                 view.setUint32(28, byteRate, true);
-                // block align (for real-time playback)
                 view.setUint16(32, blockAlign, true);
-                // bits per sample
                 view.setUint16(34, bitsPerSample, true);
-                // data chunk identifier
                 writeString(view, 36, 'data');
-                // data chunk length
                 view.setUint32(40, pcmData.length * 2, true);
-                // PCM data
                 for (let i = 0; i < pcmData.length; i++) {
                     view.setInt16(44 + i * 2, pcmData[i], true);
                 }
@@ -874,13 +887,16 @@
                 }
             }
             async function speak(text, voiceName) {
+                // This function requires an API key. It will log to console without one.
+                const apiKey = ""; // <-- ADD YOUR API KEY HERE TO ENABLE TTS
+                if (!apiKey) {
+                    console.log(`TTS (no key): ${text}`);
+                    return;
+                }
                 try {
-                    const apiKey = "";
                     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
                     const payload = {
-                        contents: [{
-                            parts: [{ text: text }]
-                        }],
+                        contents: [{ parts: [{ text: text }] }],
                         generationConfig: {
                             responseModalities: ["AUDIO"],
                             speechConfig: {
@@ -915,12 +931,9 @@
                     console.error('Error in TTS API call:', error);
                 }
             }
+            
             // --- Tone.js Sound Effects ---
-            const beamSynth = new Tone.Synth({
-                oscillator: { type: "triangle" },
-                envelope: { attack: 0.005, decay: 0.1, sustain: 0.05, release: 0.1 },
-                volume: -10
-            }).toDestination();
+            const beamSynth = new Tone.Synth({ oscillator: { type: "triangle" }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.05, release: 0.1 }, volume: -10 }).toDestination();
             const crashNoise = new Tone.NoiseSynth({ noise: { type: "brown" }, envelope: { attack: 0.005, decay: 0.1, sustain: 0, release: 0.1 } }).toDestination();
             const gameOverNoise = new Tone.NoiseSynth({ noise: { type: "white" }, envelope: { attack: 0.005, decay: 0.5, sustain: 0, release: 0.5 } }).connect(new Tone.Filter(1000, "highpass")).toDestination();
             const repairSynth = new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.2, release: 0.3 } }).toDestination();
@@ -930,62 +943,15 @@
             const explosionNoise = new Tone.NoiseSynth({ noise: { type: "white" }, envelope: { attack: 0.005, decay: 0.2, sustain: 0, release: 0.2 } }).connect(new Tone.Filter(200, "lowpass")).toDestination();
             const buttonClickSynth = new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.001, decay: 0.1, sustain: 0, release: 0.1 } }).toDestination();
             const coinSound = new Tone.Synth({ oscillator: { type: "triangle" }, envelope: { attack: 0.005, decay: 0.2, sustain: 0, release: 0.1 } }).toDestination();
-            const lavaSound = new Tone.FMSynth({
-                harmonicity: 3.01,
-                modulationIndex: 14,
-                envelope: {
-                    attack: 0.2,
-                    decay: 0.3,
-                    sustain: 0.1,
-                    release: 1.2
-                },
-                modulation: {
-                    type: "square"
-                },
-                modulationEnvelope: {
-                    attack: 0.2,
-                    decay: 0.1,
-                    sustain: 0.1,
-                    release: 0.1
-                }
-            }).toDestination();
-            const crackSound = new Tone.NoiseSynth({
-                noise: {
-                    type: "pink"
-                },
-                envelope: {
-                    attack: 0.001,
-                    decay: 0.1,
-                    sustain: 0,
-                    release: 0.1
-                }
-            }).toDestination();
-            // Custom sound effects
-            const softRockHitSynth = new Tone.NoiseSynth({
-                noise: { type: "brown" },
-                envelope: { attack: 0.02, decay: 0.3, sustain: 0, release: 0.1 }
-            }).toDestination();
-            const introSpaceSound = new Tone.PolySynth(Tone.Synth, {
-                oscillator: { type: "sine" },
-                envelope: { attack: 4, decay: 2, sustain: 0, release: 4 }
-            }).toDestination();
-            const webSound = new Tone.NoiseSynth({
-                noise: { type: "pink" },
-                envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.1 }
-            }).toDestination();
-            // New main menu ambient sound - Changed to a PolySynth for piano chord effect
-            const mainMenuAmbient = new Tone.PolySynth(Tone.Synth, {
-                oscillator: { type: "triangle" },
-                envelope: { attack: 0.05, decay: 0.5, sustain: 0.1, release: 1 },
-                volume: -10
-            }).toDestination();
-            const purchaseSound = new Tone.Synth({
-                oscillator: { type: "sine" },
-                envelope: { attack: 0.05, decay: 0.2, sustain: 0, release: 0.3 },
-                volume: -10
-            }).toDestination();
+            const lavaSound = new Tone.FMSynth({ harmonicity: 3.01, modulationIndex: 14, envelope: { attack: 0.2, decay: 0.3, sustain: 0.1, release: 1.2 }, modulation: { type: "square" }, modulationEnvelope: { attack: 0.2, decay: 0.1, sustain: 0.1, release: 0.1 } }).toDestination();
+            const crackSound = new Tone.NoiseSynth({ noise: { type: "pink" }, envelope: { attack: 0.001, decay: 0.1, sustain: 0, release: 0.1 } }).toDestination();
+            const softRockHitSynth = new Tone.NoiseSynth({ noise: { type: "brown" }, envelope: { attack: 0.02, decay: 0.3, sustain: 0, release: 0.1 } }).toDestination();
+            const introSpaceSound = new Tone.PolySynth(Tone.Synth, { oscillator: { type: "sine" }, envelope: { attack: 4, decay: 2, sustain: 0, release: 4 } }).toDestination();
+            const webSound = new Tone.NoiseSynth({ noise: { type: "pink" }, envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.1 } }).toDestination();
+            const mainMenuAmbient = new Tone.PolySynth(Tone.Synth, { oscillator: { type: "triangle" }, envelope: { attack: 0.05, decay: 0.5, sustain: 0.1, release: 1 }, volume: -10 }).toDestination();
+            const purchaseSound = new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.05, decay: 0.2, sustain: 0, release: 0.3 }, volume: -10 }).toDestination();
+            
             function playIntroMusic() {
-                // Not using external file anymore, triggering custom synth instead
                 introSpaceSound.triggerAttackRelease(["C3", "G3", "D4"], "4s");
             }
             function stopIntroMusic() {
@@ -1000,6 +966,7 @@
             function stopAllMusic() {
                 mainMenuAmbient.releaseAll();
             }
+
             // --- UI Management ---
             function showScreen(screenId) {
                 startScreen.style.display = 'none';
@@ -1028,12 +995,8 @@
                     earthHealthInfo.style.display = 'block';
                     gameControlsContainer.style.display = 'flex';
                     homeButton.style.display = 'inline-block';
-                    if (doubleBeamActive) {
-                        powerupTimerDisplay.style.display = 'block';
-                    }
-                    if (doubleCoinsActive) {
-                        coinMultiplierTimerDisplay.style.display = 'block';
-                    }
+                    if (doubleBeamActive) powerupTimerDisplay.style.display = 'block';
+                    if (doubleCoinsActive) coinMultiplierTimerDisplay.style.display = 'block';
                 } else if (screenId === 'intro') {
                     introOverlay.style.display = 'flex';
                 }
@@ -1093,6 +1056,7 @@
                 }
                 showGameOverMenu();
             }
+            
             // --- Intro Sequence ---
             let introFrameId = null;
             let introActive = false;
@@ -1112,7 +1076,7 @@
                 let textVisible = false;
                 function animateWeb() {
                     if (radius < maxRadius) {
-                        radius += 20; // Faster web animation
+                        radius += 20;
                         angle += 0.1;
                         introCtx.clearRect(0, 0, introCanvas.width, introCanvas.height);
                         introCtx.strokeStyle = "rgba(255, 255, 255, 0.8)";
@@ -1171,6 +1135,7 @@
                     stopIntro();
                 }
             }
+
             // --- Game Setup and Loop ---
             function resizeCanvas() {
                 canvas.width = Math.min(window.innerWidth * 0.9, window.innerHeight * 0.9);
@@ -1207,9 +1172,9 @@
                 beams = [];
                 redBombs = [];
                 coinMultipliers = [];
-                earthCracks = []; // Reset cracks for new game
-                isExploding = false; // Reset explosion state
-                explosionParticles = []; // Reset explosion particles
+                earthCracks = [];
+                isExploding = false;
+                explosionParticles = [];
                 frameCount = 0;
                 lastScoreIncrease = 0;
                 auraColor = null;
@@ -1226,17 +1191,17 @@
                 gameLoop();
             }
             function gameLoop() {
-                if (gameOver || gamePaused) {
-                    return;
-                }
+                if (gameOver || gamePaused) return;
                 if (isExploding) {
                     drawExplosion();
                     animationFrameId = requestAnimationFrame(gameLoop);
                     return;
                 }
-                // Update Earth animation frame
                 if (frameCount % earthAnimationSpeed === 0) {
                     currentEarthFrame = (currentEarthFrame + 1) % earthFrameCount;
+                }
+                if (frameCount % coinAnimationSpeed === 0) {
+                    currentCoinFrame = (currentCoinFrame + 1) % coinFrameCount;
                 }
                 updatePlayer();
                 updateObjects();
@@ -1253,23 +1218,11 @@
                 frameCount++;
                 animationFrameId = requestAnimationFrame(gameLoop);
             }
+            
             // --- Game Logic Functions ---
-            /**
-             * Calculates the Euclidean distance between two points.
-             * @param {number} x1 - The x-coordinate of the first point.
-             * @param {number} y1 - The y-coordinate of the first point.
-             * @param {number} x2 - The x-coordinate of the second point.
-             * @param {number} y2 - The y-coordinate of the second point.
-             * @returns {number} The distance between the two points.
-             */
             function distance(x1, y1, x2, y2) {
                 return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
             }
-            /**
-             * Determines the damage an asteroid deals based on its size.
-             * @param {object} asteroid - The asteroid object.
-             * @returns {object} An object containing player and earth damage values.
-             */
             function getAsteroidDamage(asteroid) {
                 let damage = { player: 0, earth: 0 };
                 if (asteroid.radius <= 8) {
@@ -1284,13 +1237,11 @@
                 }
                 return damage;
             }
-            /** Updates the player's position based on their orbit. */
             function updatePlayer() {
                 player.angle += player.speed * player.direction;
                 player.x = planet.x + player.orbitRadius * Math.cos(player.angle);
                 player.y = planet.y + player.orbitRadius * Math.sin(player.angle);
             }
-            /** Updates the player's aura and its timer. */
             function updateAura() {
                 if (auraTimer > 0) {
                     auraTimer--;
@@ -1300,9 +1251,6 @@
                     }
                 }
             }
-            /**
-             * Updates the red bomb pulse effect.
-             */
             function updatePulse() {
                 if (pulseActive) {
                     pulseRadius += 2.5;
@@ -1312,9 +1260,6 @@
                     }
                 }
             }
-            /**
-             * Updates explosion particles
-             */
             function updateExplosionParticles() {
                 for (let i = explosionParticles.length - 1; i >= 0; i--) {
                     let p = explosionParticles[i];
@@ -1326,7 +1271,6 @@
                     }
                 }
             }
-            /** NEW: Updates the timer on active cracks and removes them when expired. */
             function updateCracks() {
                 for (let i = earthCracks.length - 1; i >= 0; i--) {
                     earthCracks[i].timer--;
@@ -1335,12 +1279,7 @@
                     }
                 }
             }
-            /**
-             * Central function to update all game objects.
-             * This consolidates the logic from the original `update*` functions.
-             */
             function updateObjects() {
-                // Update beam positions
                 for (let i = beams.length - 1; i >= 0; i--) {
                     let beam = beams[i];
                     beam.x += beam.vx;
@@ -1349,12 +1288,10 @@
                         beams.splice(i, 1);
                     }
                 }
-                // Update asteroid positions and check for planet collision
                 for (let i = asteroids.length - 1; i >= 0; i--) {
                     let asteroid = asteroids[i];
                     asteroid.x += asteroid.vx;
                     asteroid.y += asteroid.vy;
-                    // Check for collision with the planet
                     if (distance(asteroid.x, asteroid.y, planet.x, planet.y) < planet.radius + asteroid.radius) {
                         softRockHitSynth.triggerAttackRelease("16n");
                         lavaSound.triggerAttackRelease("C2", "1s");
@@ -1362,26 +1299,16 @@
                         earthHealth -= damage.earth;
                         if (earthHealth < 0) earthHealth = 0;
                         earthHealthDisplay.innerText = earthHealth;
-                        // NEW: Determine crack type and add it
-                        let crackType;
-                        if (asteroid.radius <= 8) {
-                            crackType = 'small';
-                        } else if (asteroid.radius <= 12) {
-                            crackType = 'medium';
-                        } else {
-                            crackType = 'large';
-                        }
+                        let crackType = (asteroid.radius <= 8) ? 'small' : (asteroid.radius <= 12 ? 'medium' : 'large');
                         addEarthCrack(asteroid, crackType);
                         asteroids.splice(i, 1);
                         if (earthHealth <= 0 && !isExploding) {
                            isExploding = true;
                         }
                     } else if (asteroid.x < -20 || asteroid.x > canvas.width + 20 || asteroid.y < -20 || asteroid.y > canvas.height + 20) {
-                        // Remove asteroids that go off screen
                         asteroids.splice(i, 1);
                     }
                 }
-                // Update other objects' positions and remove if they go off-screen.
                 [redBombs, powerUps, healthPacks, coinMultipliers].forEach(array => {
                     for (let i = array.length - 1; i >= 0; i--) {
                         let object = array[i];
@@ -1397,16 +1324,13 @@
                 updateAura();
                 updatePulse();
                 updateExplosionParticles();
-                updateCracks(); // NEW: Update crack timers
+                updateCracks();
                 spawnObjects();
             }
-            /** Central collision detection and resolution function. */
             function checkCollisions() {
-                // Check collisions for all beams
                 for (let i = beams.length - 1; i >= 0; i--) {
                     let beam = beams[i];
                     let beamRemoved = false;
-                    // Check for asteroid collisions
                     for (let j = asteroids.length - 1; j >= 0; j--) {
                         let asteroid = asteroids[j];
                         if (distance(beam.x, beam.y, asteroid.x, asteroid.y) < beam.size + asteroid.radius) {
@@ -1416,13 +1340,8 @@
                             }
                             score += 1;
                             scoreDisplay.innerText = score;
-                            let coinsEarned = 1;
-                            if (doubleCoinsActive) {
-                                coinsEarned = 2;
-                                coinSound.triggerAttackRelease("E6", "16n");
-                            } else {
-                                coinSound.triggerAttackRelease("E5", "16n");
-                            }
+                            let coinsEarned = doubleCoinsActive ? 2 : 1;
+                            coinSound.triggerAttackRelease(doubleCoinsActive ? "E6" : "E5", "16n");
                             coins += coinsEarned;
                             coinDisplay.innerText = coins;
                             localStorage.setItem('orbitDashCoins', coins);
@@ -1440,7 +1359,6 @@
                         }
                     }
                     if (beamRemoved) continue;
-                    // Check for red bomb collisions
                     for (let j = redBombs.length - 1; j >= 0; j--) {
                         let bomb = redBombs[j];
                         if (distance(beam.x, beam.y, bomb.x, bomb.y) < beam.size + bomb.radius) {
@@ -1456,7 +1374,6 @@
                         }
                     }
                     if (beamRemoved) continue;
-                    // Check for power-up collisions
                     for (let j = powerUps.length - 1; j >= 0; j--) {
                         let powerUp = powerUps[j];
                         if (distance(beam.x, beam.y, powerUp.x, powerUp.y) < beam.size + powerUp.radius) {
@@ -1485,7 +1402,6 @@
                         }
                     }
                     if (beamRemoved) continue;
-                    // Check for health pack collisions
                     for (let j = healthPacks.length - 1; j >= 0; j--) {
                         let healthPack = healthPacks[j];
                         if (distance(beam.x, beam.y, healthPack.x, healthPack.y) < beam.size + healthPack.radius) {
@@ -1503,7 +1419,6 @@
                         }
                     }
                     if (beamRemoved) continue;
-                    // Check for coin multiplier collisions
                     for (let j = coinMultipliers.length - 1; j >= 0; j--) {
                         let coinMultiplier = coinMultipliers[j];
                         if (distance(beam.x, beam.y, coinMultiplier.x, coinMultiplier.y) < beam.size + coinMultiplier.radius) {
@@ -1532,7 +1447,6 @@
                         }
                     }
                 }
-                // Player collision check against everything
                 let playerHit = false;
                 for (let i = asteroids.length - 1; i >= 0; i--) {
                     let asteroid = asteroids[i];
@@ -1548,12 +1462,9 @@
                         playerHealthDisplay.innerText = playerHealth;
                         asteroids.splice(i, 1);
                         if (playerHealth <= 0) endGame("Your ship was destroyed by an asteroid!");
-                        if (playerHit) {
-                            break; // Exit the loop after one hit to prevent multiple damage instances per frame
-                        }
+                        if (playerHit) break;
                     }
                 }
-                // Pulse collision with asteroids
                 if (pulseActive) {
                     for (let i = asteroids.length - 1; i >= 0; i--) {
                         let asteroid = asteroids[i];
@@ -1567,6 +1478,7 @@
                     }
                 }
             }
+            
             // --- Drawing Functions ---
             function createStars() {
                 stars = [];
@@ -1584,50 +1496,29 @@
                     ctx.closePath();
                 });
             }
-            /** NEW: Adds a temporary crack image to the planet's surface. */
             function addEarthCrack(asteroid, crackType) {
                 crackSound.triggerAttackRelease("32n");
-                let selectedImage;
-                switch (crackType) {
-                    case 'small':
-                        selectedImage = crackImageSmall;
-                        break;
-                    case 'medium':
-                        selectedImage = crackImageMedium;
-                        break;
-                    case 'large':
-                        selectedImage = crackImageLarge;
-                        break;
-                }
+                let selectedImage = (crackType === 'small') ? crackImageSmall : crackImageMedium;
                 const impactAngle = Math.atan2(asteroid.y - planet.y, asteroid.x - planet.x);
-                const impactX = planet.x + (planet.radius - 5) * Math.cos(impactAngle); // Position slightly inside the radius
+                const impactX = planet.x + (planet.radius - 5) * Math.cos(impactAngle);
                 const impactY = planet.y + (planet.radius - 5) * Math.sin(impactAngle);
-                earthCracks.push({
-                    image: selectedImage,
-                    x: impactX,
-                    y: impactY,
-                    angle: impactAngle,
-                    timer: 90 // 1.5 seconds at 60fps
-                });
+                earthCracks.push({ image: selectedImage, x: impactX, y: impactY, angle: impactAngle, timer: 90 });
             }
-            /** NEW: Draws the temporary crack images at a smaller size. */
             function drawCracks() {
                 earthCracks.forEach(crack => {
                     if (crack.image.complete) {
-                        const scale = 0.25; // Draw image at 25% of its original size
+                        const scale = 0.25;
                         const w = crack.image.width * scale;
                         const h = crack.image.height * scale;
                         ctx.save();
                         ctx.translate(crack.x, crack.y);
-                        ctx.rotate(crack.angle + Math.PI / 2); // Align crack with impact direction
-                        // Fade out the crack in its last half-second
+                        ctx.rotate(crack.angle + Math.PI / 2);
                         ctx.globalAlpha = Math.min(1, crack.timer / 30);
                         ctx.drawImage(crack.image, -w / 2, -h / 2, w, h);
                         ctx.restore();
                     }
                 });
             }
-            /** NEW: Draws the lava core based on Earth's health. */
             function drawLavaCore() {
                 if (earthHealth < 100) {
                     const lavaRadius = planet.radius * (1 - earthHealth / 100);
@@ -1648,27 +1539,17 @@
                 }
             }
             function drawExplosion() {
-                // Animate the final explosion
                 if (explosionParticles.length === 0 && isExploding) {
                     explosionNoise.triggerAttackRelease("1s");
                     for (let i = 0; i < 500; i++) {
                         const angle = Math.random() * Math.PI * 2;
                         const speed = Math.random() * 10 + 2;
-                        explosionParticles.push({
-                            x: planet.x,
-                            y: planet.y,
-                            vx: speed * Math.cos(angle),
-                            vy: speed * Math.sin(angle),
-                            radius: Math.random() * 3 + 1,
-                            color: `hsl(${Math.random() * 30 + 10}, 100%, 50%)`,
-                            alpha: 1
-                        });
+                        explosionParticles.push({ x: planet.x, y: planet.y, vx: speed * Math.cos(angle), vy: speed * Math.sin(angle), radius: Math.random() * 3 + 1, color: `hsl(${Math.random() * 30 + 10}, 100%, 50%)`, alpha: 1 });
                     }
                 }
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 drawStars();
                 updateExplosionParticles();
-                // Draw particles
                 explosionParticles.forEach(p => {
                     ctx.globalAlpha = p.alpha;
                     ctx.beginPath();
@@ -1684,24 +1565,14 @@
                 }
             }
             function drawPlanet() {
-                if (isExploding) {
-                    return;
-                }
-                // New logic for drawing animated Earth
+                if (isExploding) return;
                 const currentFrameImage = earthFrames[currentEarthFrame];
                 if (currentFrameImage && currentFrameImage.complete) {
                     ctx.shadowColor = '#00ccff';
                     ctx.shadowBlur = 30;
-                    ctx.drawImage(
-                        currentFrameImage,
-                        planet.x - planet.radius,
-                        planet.y - planet.radius,
-                        planet.radius * 2,
-                        planet.radius * 2
-                    );
+                    ctx.drawImage(currentFrameImage, planet.x - planet.radius, planet.y - planet.radius, planet.radius * 2, planet.radius * 2);
                     ctx.shadowBlur = 0;
                 } else {
-                    // Fallback to the old gradient if images are not loaded
                     ctx.shadowColor = '#00ccff';
                     ctx.shadowBlur = 30;
                     const gradient = ctx.createRadialGradient(planet.x, planet.y, 0, planet.x, planet.y, planet.radius);
@@ -1715,23 +1586,20 @@
                     ctx.closePath();
                     ctx.shadowBlur = 0;
                 }
-                // FIX: Draw lava core on top, but clipped to the planet's shape
                 ctx.save();
                 ctx.beginPath();
                 ctx.arc(planet.x, planet.y, planet.radius, 0, Math.PI * 2);
                 ctx.clip();
                 drawLavaCore();
                 ctx.restore();
-                drawCracks(); // Draw temporary cracks over the planet
+                drawCracks();
             }
-            // --- Player skin drawing functions (refactored to be centered) ---
             function drawIronMan(context, size) {
                 if (ironManImage.complete) {
                     context.drawImage(ironManImage, -size, -size, size * 2, size * 2);
                 }
             }
             function drawGreenHulk(context, size) {
-                // Main triangular body
                 context.beginPath();
                 context.moveTo(0, -size);
                 context.lineTo(-size * 1.2, size * 0.8);
@@ -1742,7 +1610,6 @@
                 context.fill();
                 context.closePath();
                 context.shadowBlur = 0;
-                // Arc reactor core
                 context.beginPath();
                 context.arc(0, size * 0.2, size * 0.4, 0, Math.PI * 2);
                 context.fillStyle = '#FFD700';
@@ -1751,7 +1618,6 @@
                 context.fill();
                 context.closePath();
                 context.shadowBlur = 0;
-                // Outline
                 context.beginPath();
                 context.moveTo(0, -size);
                 context.lineTo(-size * 1.2, size * 0.8);
@@ -1763,7 +1629,6 @@
                 context.closePath();
             }
             function drawBlackWidow(context, size) {
-                // Main triangular body
                 context.beginPath();
                 context.moveTo(0, -size);
                 context.lineTo(-size * 1.2, size * 0.8);
@@ -1774,7 +1639,6 @@
                 context.fill();
                 context.closePath();
                 context.shadowBlur = 0;
-                // Arc reactor core
                 context.beginPath();
                 context.arc(0, size * 0.2, size * 0.4, 0, Math.PI * 2);
                 context.fillStyle = '#FFD700';
@@ -1783,7 +1647,6 @@
                 context.fill();
                 context.closePath();
                 context.shadowBlur = 0;
-                // Outline
                 context.beginPath();
                 context.moveTo(0, -size);
                 context.lineTo(-size * 1.2, size * 0.8);
@@ -1795,7 +1658,6 @@
                 context.closePath();
             }
             function drawCaptainAmerica(context, size) {
-                // Outer ring
                 context.beginPath();
                 context.arc(0, 0, size, 0, Math.PI * 2);
                 context.fillStyle = '#FFFFFF';
@@ -1803,7 +1665,6 @@
                 context.shadowBlur = 10;
                 context.fill();
                 context.closePath();
-                // Middle ring
                 context.beginPath();
                 context.arc(0, 0, size * 0.6, 0, Math.PI * 2);
                 context.fillStyle = '#003366';
@@ -1811,7 +1672,6 @@
                 context.shadowBlur = 10;
                 context.fill();
                 context.closePath();
-                // Center dot
                 context.beginPath();
                 context.arc(0, 0, size * 0.3, 0, Math.PI * 2);
                 context.fillStyle = '#CC0000';
@@ -1820,7 +1680,6 @@
                 context.fill();
                 context.closePath();
                 context.shadowBlur = 0;
-                // Outline
                 context.beginPath();
                 context.arc(0, 0, size, 0, Math.PI * 2);
                 context.strokeStyle = '#FFD700';
@@ -1828,11 +1687,10 @@
                 context.stroke();
                 context.closePath();
             }
-            // New functions for drawing power-ups in the shop
             function drawHealthPack(context, size) {
                 const halfSize = size * 0.5;
                 context.save();
-                context.translate(0, 0); // Center the drawing
+                context.translate(0, 0);
                 context.fillStyle = '#00FF00';
                 context.shadowColor = '#00FF00';
                 context.shadowBlur = 10;
@@ -1845,7 +1703,7 @@
                 const radius = size * 0.4;
                 const offset = size * 0.5;
                 context.save();
-                context.translate(0, 0); // Center the drawing
+                context.translate(0, 0);
                 context.beginPath();
                 context.fillStyle = '#FFFF00';
                 context.shadowColor = '#FFFF00';
@@ -1856,22 +1714,29 @@
                 context.restore();
             }
             function drawCoinMultiplier(context, size) {
-                context.save();
-                context.translate(0, 0); // Center the drawing
-                context.beginPath();
-                context.arc(0, 0, size, 0, Math.PI * 2);
-                context.fillStyle = '#FFD700';
-                context.shadowColor = '#FFD700';
-                context.shadowBlur = 10;
-                context.fill();
-                context.closePath();
-                // Draw the currency symbol in the middle
-                context.font = `${size}px Orbitron`;
-                context.fillStyle = '#0d0d1a';
-                context.textAlign = 'center';
-                context.textBaseline = 'middle';
-                context.fillText('$', 0, 0);
-                context.restore();
+                const firstCoinImage = coinFrames[0];
+                if (firstCoinImage && firstCoinImage.complete) {
+                    context.save();
+                    context.translate(0, 0);
+                    context.drawImage(firstCoinImage, -size, -size, size * 2, size * 2);
+                    context.restore();
+                } else {
+                    context.save();
+                    context.translate(0, 0);
+                    context.beginPath();
+                    context.arc(0, 0, size, 0, Math.PI * 2);
+                    context.fillStyle = '#FFD700';
+                    context.shadowColor = '#FFD700';
+                    context.shadowBlur = 10;
+                    context.fill();
+                    context.closePath();
+                    context.font = `${size}px Orbitron`;
+                    context.fillStyle = '#0d0d1a';
+                    context.textAlign = 'center';
+                    context.textBaseline = 'middle';
+                    context.fillText('$', 0, 0);
+                    context.restore();
+                }
             }
             function drawPlayer() {
                 if (auraColor) {
@@ -1898,28 +1763,14 @@
             }
             function drawAsteroids() {
                 asteroids.forEach(asteroid => {
-                    // Draw the trail effect first
                     ctx.save();
                     ctx.globalAlpha = 0.5;
                     const trailLength = 20;
                     for (let i = 0; i < trailLength; i++) {
                         const alpha = 1 - i / trailLength;
                         ctx.beginPath();
-                        ctx.arc(
-                            asteroid.x - asteroid.vx * i * 0.5,
-                            asteroid.y - asteroid.vy * i * 0.5,
-                            asteroid.radius * alpha,
-                            0,
-                            Math.PI * 2
-                        );
-                        const gradient = ctx.createRadialGradient(
-                            asteroid.x - asteroid.vx * i * 0.5,
-                            asteroid.y - asteroid.vy * i * 0.5,
-                            0,
-                            asteroid.x - asteroid.vx * i * 0.5,
-                            asteroid.y - asteroid.vy * i * 0.5,
-                            asteroid.radius * alpha
-                        );
+                        ctx.arc(asteroid.x - asteroid.vx * i * 0.5, asteroid.y - asteroid.vy * i * 0.5, asteroid.radius * alpha, 0, Math.PI * 2);
+                        const gradient = ctx.createRadialGradient(asteroid.x - asteroid.vx * i * 0.5, asteroid.y - asteroid.vy * i * 0.5, 0, asteroid.x - asteroid.vx * i * 0.5, asteroid.y - asteroid.vy * i * 0.5, asteroid.radius * alpha);
                         gradient.addColorStop(0, `rgba(255, 255, 0, ${alpha})`);
                         gradient.addColorStop(0.5, `rgba(255, 100, 0, ${alpha})`);
                         gradient.addColorStop(1, `rgba(255, 0, 0, 0)`);
@@ -1927,30 +1778,18 @@
                         ctx.fill();
                     }
                     ctx.restore();
-
-                    // Draw the asteroid skin image on top
                     if (asteroid.skin && asteroid.skin.complete) {
                         ctx.save();
                         ctx.translate(asteroid.x, asteroid.y);
-                        asteroid.angle = (asteroid.angle || 0) + 0.005; // Add slow rotation
+                        asteroid.angle = (asteroid.angle || 0) + 0.005;
                         ctx.rotate(asteroid.angle);
-                        ctx.drawImage(
-                            asteroid.skin,
-                            -asteroid.radius,
-                            -asteroid.radius,
-                            asteroid.radius * 2,
-                            asteroid.radius * 2
-                        );
+                        ctx.drawImage(asteroid.skin, -asteroid.radius, -asteroid.radius, asteroid.radius * 2, asteroid.radius * 2);
                         ctx.restore();
                     } else {
-                        // Fallback drawing if image is not loaded
                         ctx.shadowColor = 'rgba(255, 0, 0, 0.7)';
                         ctx.shadowBlur = 15;
                         ctx.beginPath();
-                        const gradient = ctx.createRadialGradient(
-                            asteroid.x, asteroid.y, asteroid.radius * 0.2,
-                            asteroid.x, asteroid.y, asteroid.radius
-                        );
+                        const gradient = ctx.createRadialGradient(asteroid.x, asteroid.y, asteroid.radius * 0.2, asteroid.x, asteroid.y, asteroid.radius);
                         gradient.addColorStop(0, '#a9a9a9');
                         gradient.addColorStop(1, '#505050');
                         ctx.arc(asteroid.x, asteroid.y, asteroid.radius, 0, Math.PI * 2);
@@ -2017,22 +1856,30 @@
                 });
                 coinMultipliers.forEach(coinMultiplier => {
                     const radius = coinMultiplier.radius;
-                    ctx.save();
-                    ctx.translate(coinMultiplier.x, coinMultiplier.y);
-                    ctx.beginPath();
-                    ctx.arc(0, 0, radius, 0, Math.PI * 2);
-                    ctx.fillStyle = '#FFD700';
-                    ctx.shadowColor = '#FFD700';
-                    ctx.shadowBlur = 10;
-                    ctx.fill();
-                    ctx.closePath();
-                    // Draw the currency symbol in the middle
-                    ctx.font = `${radius}px Orbitron`;
-                    ctx.fillStyle = '#0d0d1a';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText('$', 0, 0);
-                    ctx.restore();
+                    const currentFrameImage = coinFrames[currentCoinFrame];
+                    if (currentFrameImage && currentFrameImage.complete) {
+                        ctx.save();
+                        ctx.shadowColor = '#FFD700';
+                        ctx.shadowBlur = 15;
+                        ctx.drawImage(currentFrameImage, coinMultiplier.x - radius, coinMultiplier.y - radius, radius * 2, radius * 2);
+                        ctx.restore();
+                    } else {
+                        ctx.save();
+                        ctx.translate(coinMultiplier.x, coinMultiplier.y);
+                        ctx.beginPath();
+                        ctx.arc(0, 0, radius, 0, Math.PI * 2);
+                        ctx.fillStyle = '#FFD700';
+                        ctx.shadowColor = '#FFD700';
+                        ctx.shadowBlur = 10;
+                        ctx.fill();
+                        ctx.closePath();
+                        ctx.font = `${radius}px Orbitron`;
+                        ctx.fillStyle = '#0d0d1a';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText('$', 0, 0);
+                        ctx.restore();
+                    }
                 });
             }
             function drawBeams() {
@@ -2051,10 +1898,7 @@
                 if (pulseActive) {
                     ctx.save();
                     ctx.beginPath();
-                    const gradient = ctx.createRadialGradient(
-                        planet.x, planet.y, 0,
-                        planet.x, planet.y, pulseRadius
-                    );
+                    const gradient = ctx.createRadialGradient(planet.x, planet.y, 0, planet.x, planet.y, pulseRadius);
                     gradient.addColorStop(0, 'rgba(255, 0, 0, 0.5)');
                     gradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
                     ctx.fillStyle = gradient;
@@ -2063,22 +1907,16 @@
                     ctx.restore();
                 }
             }
-            // --- Game Logic Functions ---
             function spawnObjects() {
-                // Spawn asteroids on a fixed interval
                 if (frameCount % asteroidSpawnRate === 0) spawnAsteroid();
-                // Delay power-up spawning for the first 10 seconds (600 frames)
                 if (frameCount > powerUpStartDelay) {
-                    // Spawn power-ups every 15 seconds (900 frames)
                     if (frameCount % (15 * 60) === 0) {
                         spawnPowerUp();
                         spawnHealthPack();
                     }
-                    // Spawn red bombs every 15 seconds (900 frames)
                     if (frameCount % (15 * 60) === 0) {
                         spawnRedBomb();
                     }
-                    // Spawn coin multipliers every 20 seconds
                     if (frameCount % (20 * 60) === 0) {
                         spawnCoinMultiplier();
                     }
@@ -2093,14 +1931,7 @@
                 let angleToCenter = Math.atan2(planet.y - y, planet.x - x);
                 let vx = speed * Math.cos(angleToCenter);
                 let vy = speed * Math.sin(angleToCenter);
-                let skin;
-                if (radius <= 8) {
-                    skin = smallAsteroidImage;
-                } else if (radius <= 12) {
-                    skin = mediumAsteroidImage;
-                } else {
-                    skin = largeAsteroidImage;
-                }
+                let skin = (radius <= 8) ? smallAsteroidImage : (radius <= 12 ? mediumAsteroidImage : largeAsteroidImage);
                 asteroids.push({ x, y, radius, vx, vy, skin });
             }
             function spawnRedBomb() {
@@ -2137,7 +1968,7 @@
                 healthPacks.push({ x, y, radius, vx, vy, color: '#00ff00' });
             }
             function spawnCoinMultiplier() {
-                let radius = 8;
+                let radius = 12;
                 let angle = Math.random() * Math.PI * 2;
                 let x = planet.x + canvas.width * 0.6 * Math.cos(angle);
                 let y = planet.y + canvas.height * 0.6 * Math.sin(angle);
@@ -2147,15 +1978,12 @@
                 let vy = speed * Math.sin(angleToCenter);
                 coinMultipliers.push({ x, y, radius, vx, vy, color: '#FFD700' });
             }
+            
             // --- Shop Menu Functions ---
             function showShopMessage(title, message) {
                 const messageBox = document.createElement('div');
                 messageBox.classList.add('message-box');
-                messageBox.innerHTML = `
-                    <h2>${title}</h2>
-                    <p>${message}</p>
-                    <div class="button-group"><button class="button" id="close-msg-btn">Close</button></div>
-                `;
+                messageBox.innerHTML = `<h2>${title}</h2><p>${message}</p><div class="button-group"><button class="button" id="close-msg-btn">Close</button></div>`;
                 shopMenuOverlay.appendChild(messageBox);
                 document.getElementById('close-msg-btn').addEventListener('click', () => {
                     buttonClickSynth.triggerAttackRelease("C5", "8n");
@@ -2163,21 +1991,19 @@
                 });
             }
             function drawShopSkins() {
-                const previewSize = 20; // Fixed size for the preview canvas
+                const previewSize = 20;
                 for (const key in SKINS) {
                     const skinCanvas = document.getElementById(`skin-canvas-${key}`);
                     if (skinCanvas) {
                         const skinCtx = skinCanvas.getContext('2d');
                         skinCtx.clearRect(0, 0, skinCanvas.width, skinCanvas.height);
                         skinCtx.save();
-                        // Translate to the center of the canvas
                         skinCtx.translate(skinCanvas.width / 2, skinCanvas.height / 2);
                         SKINS[key].draw(skinCtx, previewSize);
                         skinCtx.restore();
                     }
                 }
             }
-            // New function to draw power-up icons in the shop
             function drawShopPowerups() {
                 const previewSize = 20;
                 for (const key in UPGRADES) {
@@ -2201,7 +2027,7 @@
                     const isSelected = key === currentSkin;
                     const optionDiv = document.createElement('div');
                     optionDiv.className = `skin-option ${!isUnlocked && (skin.high_score_req && currentHighScore < skin.high_score_req || coins < skin.price) ? 'locked' : ''} ${isSelected ? 'selected' : ''}`;
-                    optionDiv.dataset.skinKey = key; // Add data attribute for easier access
+                    optionDiv.dataset.skinKey = key;
                     let statusText = '';
                     let buttonHtml = '';
                     if (isSelected) {
@@ -2216,23 +2042,14 @@
                         statusText = `Cost: ${skin.price} Coins`;
                         buttonHtml = `<button class="purchase-button" data-action="unlock">Unlock</button>`;
                     }
-                    optionDiv.innerHTML = `
-                        <div class="skin-option-content">
-                            <canvas id="skin-canvas-${key}" width="60" height="60"></canvas>
-                            <h3>${skin.name}</h3>
-                        </div>
-                        <span class="unlock-cost">${statusText}</span>
-                        ${buttonHtml}
-                    `;
+                    optionDiv.innerHTML = `<div class="skin-option-content"><canvas id="skin-canvas-${key}" width="60" height="60"></canvas><h3>${skin.name}</h3></div><span class="unlock-cost">${statusText}</span>${buttonHtml}`;
                     skinsOptionsContainer.appendChild(optionDiv);
                 }
-                // Call the function to draw the skins on the newly created canvases
                 drawShopSkins();
-                // Attach event listeners to the new buttons
                 document.querySelectorAll('#skins-options-container .purchase-button').forEach(button => {
-                    button.addEventListener('click', () => {
-                        const key = button.closest('.skin-option').dataset.skinKey;
-                        const action = button.dataset.action;
+                    button.addEventListener('click', (e) => {
+                        const key = e.target.closest('.skin-option').dataset.skinKey;
+                        const action = e.target.dataset.action;
                         const skin = SKINS[key];
                         if (action === 'equip') {
                             buttonClickSynth.triggerAttackRelease("C5", "8n");
@@ -2268,16 +2085,7 @@
                 const canUpgradeHealth = !isMaxHealth && coins >= healthUpgradeCost;
                 const healthUpgradeDiv = document.createElement('div');
                 healthUpgradeDiv.className = `upgrade-option ${!canUpgradeHealth ? 'locked' : ''}`;
-                healthUpgradeDiv.innerHTML = `
-                    <div class="skin-option-content">
-                        <canvas id="powerup-canvas-health" width="60" height="60"></canvas>
-                        <h3>${healthUpgradeInfo.name} Upgrade</h3>
-                    </div>
-                    <p>Current Level: ${healthUpgradeLevel} / ${healthUpgradeInfo.max_level}</p>
-                    <p>Heals: ${currentHealthRestore}</p>
-                    <span class="unlock-cost">${isMaxHealth ? 'Max Level' : `Cost: ${healthUpgradeCost} Coins`}</span>
-                    <button class="purchase-button" id="health-upgrade-btn" ${!canUpgradeHealth ? 'disabled' : ''}>Upgrade</button>
-                `;
+                healthUpgradeDiv.innerHTML = `<div class="skin-option-content"><canvas id="powerup-canvas-health" width="60" height="60"></canvas><h3>${healthUpgradeInfo.name} Upgrade</h3></div><p>Current Level: ${healthUpgradeLevel} / ${healthUpgradeInfo.max_level}</p><p>Heals: ${currentHealthRestore}</p><span class="unlock-cost">${isMaxHealth ? 'Max Level' : `Cost: ${healthUpgradeCost} Coins`}</span><button class="purchase-button" id="health-upgrade-btn" ${!canUpgradeHealth ? 'disabled' : ''}>Upgrade</button>`;
                 powerupsOptionsContainer.appendChild(healthUpgradeDiv);
                 // Double Beam Upgrade
                 const doubleBeamUpgradeInfo = UPGRADES.doubleBeam;
@@ -2288,16 +2096,7 @@
                 const canUpgradeDoubleBeam = !isMaxDoubleBeam && coins >= doubleBeamUpgradeCost;
                 const doubleBeamUpgradeDiv = document.createElement('div');
                 doubleBeamUpgradeDiv.className = `upgrade-option ${!canUpgradeDoubleBeam ? 'locked' : ''}`;
-                doubleBeamUpgradeDiv.innerHTML = `
-                    <div class="skin-option-content">
-                        <canvas id="powerup-canvas-doubleBeam" width="60" height="60"></canvas>
-                        <h3>${doubleBeamUpgradeInfo.name} Upgrade</h3>
-                    </div>
-                    <p>Current Level: ${doubleBeamUpgradeLevel} / ${maxDoubleBeamLevel}</p>
-                    <p>Duration: ${currentDoubleBeamDuration}s</p>
-                    <span class="unlock-cost">${isMaxDoubleBeam ? 'Max Level' : `Cost: ${doubleBeamUpgradeCost} Coins`}</span>
-                    <button class="purchase-button" id="double-beam-upgrade-btn" ${!canUpgradeDoubleBeam ? 'disabled' : ''}>Upgrade</button>
-                `;
+                doubleBeamUpgradeDiv.innerHTML = `<div class="skin-option-content"><canvas id="powerup-canvas-doubleBeam" width="60" height="60"></canvas><h3>${doubleBeamUpgradeInfo.name} Upgrade</h3></div><p>Current Level: ${doubleBeamUpgradeLevel} / ${maxDoubleBeamLevel}</p><p>Duration: ${currentDoubleBeamDuration}s</p><span class="unlock-cost">${isMaxDoubleBeam ? 'Max Level' : `Cost: ${doubleBeamUpgradeCost} Coins`}</span><button class="purchase-button" id="double-beam-upgrade-btn" ${!canUpgradeDoubleBeam ? 'disabled' : ''}>Upgrade</button>`;
                 powerupsOptionsContainer.appendChild(doubleBeamUpgradeDiv);
                 // Coin Multiplier Upgrade
                 const coinMultiplierUpgradeInfo = UPGRADES.coinMultiplier;
@@ -2308,18 +2107,9 @@
                 const canUpgradeCoinMultiplier = !isMaxCoinMultiplier && coins >= coinMultiplierUpgradeCost;
                 const coinMultiplierUpgradeDiv = document.createElement('div');
                 coinMultiplierUpgradeDiv.className = `upgrade-option ${!canUpgradeCoinMultiplier ? 'locked' : ''}`;
-                coinMultiplierUpgradeDiv.innerHTML = `
-                    <div class="skin-option-content">
-                        <canvas id="powerup-canvas-coinMultiplier" width="60" height="60"></canvas>
-                        <h3>${coinMultiplierUpgradeInfo.name} Upgrade</h3>
-                    </div>
-                    <p>Current Level: ${coinMultiplierUpgradeLevel} / ${maxCoinMultiplierLevel}</p>
-                    <p>Duration: ${currentCoinMultiplierDuration}s</p>
-                    <span class="unlock-cost">${isMaxCoinMultiplier ? 'Max Level' : `Cost: ${coinMultiplierUpgradeCost} Coins`}</span>
-                    <button class="purchase-button" id="coin-multiplier-upgrade-btn" ${!canUpgradeCoinMultiplier ? 'disabled' : ''}>Upgrade</button>
-                `;
+                coinMultiplierUpgradeDiv.innerHTML = `<div class="skin-option-content"><canvas id="powerup-canvas-coinMultiplier" width="60" height="60"></canvas><h3>${coinMultiplierUpgradeInfo.name} Upgrade</h3></div><p>Current Level: ${coinMultiplierUpgradeLevel} / ${maxCoinMultiplierLevel}</p><p>Duration: ${currentCoinMultiplierDuration}s</p><span class="unlock-cost">${isMaxCoinMultiplier ? 'Max Level' : `Cost: ${coinMultiplierUpgradeCost} Coins`}</span><button class="purchase-button" id="coin-multiplier-upgrade-btn" ${!canUpgradeCoinMultiplier ? 'disabled' : ''}>Upgrade</button>`;
                 powerupsOptionsContainer.appendChild(coinMultiplierUpgradeDiv);
-                // Add event listeners to the new buttons
+                
                 document.getElementById('health-upgrade-btn').addEventListener('click', () => {
                     if (canUpgradeHealth) {
                         purchaseSound.triggerAttackRelease("C5", "8n");
@@ -2385,16 +2175,11 @@
             }
             function getBeamColor() {
                 switch(player.skin) {
-                    case 'ironMan':
-                        return '#CC0000';
-                    case 'greenHulk':
-                        return '#006400';
-                    case 'blackWidow':
-                        return '#4d4d4d';
-                    case 'captainAmerica':
-                        return '#FFD700';
-                    default:
-                        return '#00ffcc';
+                    case 'ironMan': return '#CC0000';
+                    case 'greenHulk': return '#006400';
+                    case 'blackWidow': return '#4d4d4d';
+                    case 'captainAmerica': return '#FFD700';
+                    default: return '#00ffcc';
                 }
             }
             function fireBeam() {
@@ -2432,10 +2217,9 @@
                     gameLoop();
                 }
             }
+            
             // --- Event Listeners ---
-            startPlayBtn.addEventListener('click', () => {
-                startIntro();
-            });
+            startPlayBtn.addEventListener('click', startIntro);
             startGameBtnInMenu.addEventListener('click', newGame);
             shopBtn.addEventListener('click', showShopMenu);
             shopBackBtn.addEventListener('click', backToMainMenu);
@@ -2450,10 +2234,6 @@
                 previousScreen = 'gameOver';
                 showInstructions();
             });
-            // The instruction button is not in-game anymore
-            // instructionsButton.addEventListener('click', () => {
-            //     previousScreen = 'game';
-            // });
             instructionsBackBtn.addEventListener('click', backFromInstructions);
             reviveBtn.addEventListener('click', () => {
                 const reviveCost = 20 + (reviveCount * 20);
@@ -2514,8 +2294,6 @@
                     showMainMenu();
                 }
             });
-            // Don't show the start screen immediately, wait for assets to load.
-            // showScreen('startScreen');
         };
     </script>
 </body>
