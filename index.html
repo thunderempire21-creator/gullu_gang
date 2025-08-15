@@ -716,6 +716,16 @@
             const redAuraFrameCount = 13;
             let currentRedAuraFrame = 0;
             const redAuraAnimationSpeed = 5;
+             // --- Green Aura Animation Variables ---
+            let greenAuraFrames = [];
+            const greenAuraFrameCount = 13;
+            let currentGreenAuraFrame = 0;
+            const greenAuraAnimationSpeed = 5;
+            // --- Wrench Animation Variables ---
+            let wrenchFrames = [];
+            const wrenchFrameCount = 5;
+            let currentWrenchFrame = 0;
+            const wrenchAnimationSpeed = 10;
             let player = {
                 x: 0,
                 y: 0,
@@ -772,7 +782,7 @@
             let healthUpgradeLevel = parseInt(localStorage.getItem('healthUpgradeLevel') || 0);
             let doubleBeamUpgradeLevel = parseInt(localStorage.getItem('doubleBeamUpgradeLevel') || 0);
             let coinMultiplierUpgradeLevel = parseInt(localStorage.getItem('coinMultiplierUpgradeLevel') || 0);
-            
+                        
             // --- Asset Loading ---
             const assetsToLoad = [];
             const beamImages = {};
@@ -781,7 +791,7 @@
             ironManImage.src = 'images/Ironman.png';
             ironManImage.onerror = () => ironManImage.src = 'https://placehold.co/100x100/ff0000/ffffff?text=IronMan';
             assetsToLoad.push(ironManImage);
-            
+                        
             const greenHulkImage = new Image();
             greenHulkImage.src = 'images/hulk.png';
             greenHulkImage.onerror = () => greenHulkImage.src = 'https://placehold.co/100x100/00ff00/ffffff?text=Hulk';
@@ -796,7 +806,7 @@
             captainAmericaImage.src = 'images/captain.png';
             captainAmericaImage.onerror = () => captainAmericaImage.src = 'https://placehold.co/100x100/0000ff/ffffff?text=Cap';
             assetsToLoad.push(captainAmericaImage);
-            
+                        
             const pantherGulluImage = new Image();
             pantherGulluImage.src = 'images/panther.png';
             pantherGulluImage.onerror = () => pantherGulluImage.src = 'https://placehold.co/100x100/8A2BE2/ffffff?text=Panther';
@@ -837,7 +847,7 @@
             crackImageLarge.src = 'images/crack5.png';
             crackImageLarge.onerror = () => crackImageLarge.src = 'https://placehold.co/150x150/ffffff/000000?text=Crack';
             assetsToLoad.push(crackImageSmall, crackImageMedium, crackImageLarge);
-            
+                        
             // Earth Animation Frames
             const earthFrameURLs = [
                 'images/frame1.png',
@@ -866,7 +876,7 @@
             largeAsteroidImage.src = 'images/large.png';
             largeAsteroidImage.onerror = () => largeAsteroidImage.src = 'https://placehold.co/70x70/964B00/ffffff?text=L';
             assetsToLoad.push(smallAsteroidImage, mediumAsteroidImage, largeAsteroidImage);
-            
+                        
             // Coin animation frames
             const coinFrameURLs = [
                 'images/coin1.png',
@@ -931,6 +941,37 @@
                 assetsToLoad.push(frameImage);
             }
 
+             // Green Aura animation frames
+            const greenAuraFrameURLs = [
+                 'images/green1.png', 'images/green2.png', 'images/green3.png', 'images/green4.png', 'images/green5.png',
+                 'images/green6.png', 'images/green7.png', 'images/green8.png', 'images/green9.png', 'images/green10.png',
+                 'images/green11.png', 'images/green12.png', 'images/green13.png'
+            ];
+            for (let i = 0; i < greenAuraFrameCount; i++) {
+                 const frameImage = new Image();
+                 frameImage.src = greenAuraFrameURLs[i];
+                 frameImage.onerror = () => frameImage.src = `https://placehold.co/50x50/00ff00/ffffff?text=G${i+1}`;
+                 greenAuraFrames.push(frameImage);
+                 assetsToLoad.push(frameImage);
+            }
+
+             // Wrench animation frames
+            const wrenchFrameURLs = [
+                'images/wrench1.png',
+                'images/wrench2.png',
+                'images/wrench3.png',
+                'images/wrench4.png',
+                'images/wrench5.png'
+            ];
+            for (let i = 0; i < wrenchFrameCount; i++) {
+                const frameImage = new Image();
+                frameImage.src = wrenchFrameURLs[i];
+                frameImage.onerror = () => frameImage.src = `https://placehold.co/50x50/ffff00/ffffff?text=W${i+1}`;
+                wrenchFrames.push(frameImage);
+                assetsToLoad.push(frameImage);
+            }
+
+
             let loadedAssets = 0;
             const totalAssets = assetsToLoad.length;
             function assetLoaded() {
@@ -955,7 +996,7 @@
                     };
                 }
             });
-            
+                        
             // --- TTS Functions ---
             function base64ToArrayBuffer(base64) {
                 const binaryString = window.atob(base64);
@@ -1041,7 +1082,7 @@
                     console.error('Error in TTS API call:', error);
                 }
             }
-            
+                        
             // --- Tone.js Sound Effects ---
             const beamSynth = new Tone.Synth({ oscillator: { type: "triangle" }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.05, release: 0.1 }, volume: -10 }).toDestination();
             const crashNoise = new Tone.NoiseSynth({ noise: { type: "brown" }, envelope: { attack: 0.005, decay: 0.1, sustain: 0, release: 0.1 } }).toDestination();
@@ -1060,7 +1101,7 @@
             const webSound = new Tone.NoiseSynth({ noise: { type: "pink" }, envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.1 } }).toDestination();
             const mainMenuAmbient = new Tone.PolySynth(Tone.Synth, { oscillator: { type: "triangle" }, envelope: { attack: 0.05, decay: 0.5, sustain: 0.1, release: 1 }, volume: -10 }).toDestination();
             const purchaseSound = new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.05, decay: 0.2, sustain: 0, release: 0.3 }, volume: -10 }).toDestination();
-            
+                        
             function playIntroMusic() {
                 introSpaceSound.triggerAttackRelease(["C3", "G3", "D4"], "4s");
             }
@@ -1166,7 +1207,7 @@
                 }
                 showGameOverMenu();
             }
-            
+                        
             // --- Intro Sequence ---
             let introFrameId = null;
             let introActive = false;
@@ -1322,6 +1363,12 @@
                  if (frameCount % redAuraAnimationSpeed === 0) {
                     currentRedAuraFrame = (currentRedAuraFrame + 1) % redAuraFrameCount;
                 }
+                if (frameCount % greenAuraAnimationSpeed === 0) {
+                    currentGreenAuraFrame = (currentGreenAuraFrame + 1) % greenAuraFrameCount;
+                }
+                if (frameCount % wrenchAnimationSpeed === 0) {
+                    currentWrenchFrame = (currentWrenchFrame + 1) % wrenchFrameCount;
+                }
                 updatePlayer();
                 updateObjects();
                 checkCollisions();
@@ -1337,7 +1384,7 @@
                 frameCount++;
                 animationFrameId = requestAnimationFrame(gameLoop);
             }
-            
+                        
             // --- Game Logic Functions ---
             function distance(x1, y1, x2, y2) {
                 return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
@@ -1526,7 +1573,7 @@
                         if (distance(beam.x, beam.y, healthPack.x, healthPack.y) < beam.size + healthPack.radius) {
                             beams.splice(i, 1);
                             healthPacks.splice(j, 1);
-                            auraColor = '#00FF00';
+                            auraColor = 'greenAura';
                             auraTimer = 2 * 60;
                             repairSynth.triggerAttackRelease("C6", "4n");
                             let health_restore = UPGRADES.health.base_restore + (UPGRADES.health.level_restore_increase * healthUpgradeLevel);
@@ -1597,7 +1644,7 @@
                     }
                 }
             }
-            
+                        
             // --- Drawing Functions ---
             function createStars() {
                 stars = [];
@@ -1765,18 +1812,27 @@
                 }
             }
             function drawDoubleBeam(context, size) {
-                const radius = size * 0.4;
-                const offset = size * 0.5;
-                context.save();
-                context.translate(0, 0);
-                context.beginPath();
-                context.fillStyle = '#FFFF00';
-                context.shadowColor = '#FFFF00';
-                context.shadowBlur = 10;
-                context.arc(-offset, 0, radius, 0, Math.PI * 2);
-                context.arc(offset, 0, radius, 0, Math.PI * 2);
-                context.fill();
-                context.restore();
+                const firstWrenchImage = wrenchFrames[0];
+                if (firstWrenchImage && firstWrenchImage.complete) {
+                    context.save();
+                    context.translate(0, 0);
+                    context.drawImage(firstWrenchImage, -size, -size, size * 2, size * 2);
+                    context.restore();
+                } else {
+                    // Fallback drawing
+                    const radius = size * 0.4;
+                    const offset = size * 0.5;
+                    context.save();
+                    context.translate(0, 0);
+                    context.beginPath();
+                    context.fillStyle = '#FFFF00';
+                    context.shadowColor = '#FFFF00';
+                    context.shadowBlur = 10;
+                    context.arc(-offset, 0, radius, 0, Math.PI * 2);
+                    context.arc(offset, 0, radius, 0, Math.PI * 2);
+                    context.fill();
+                    context.restore();
+                }
             }
             function drawCoinMultiplier(context, size) {
                 const firstCoinImage = coinFrames[0];
@@ -1809,6 +1865,12 @@
                      ctx.translate(player.x, player.y);
                      if (auraColor === 'redAura') {
                          const currentFrameImage = redAuraFrames[currentRedAuraFrame];
+                         if (currentFrameImage && currentFrameImage.complete) {
+                             const auraSize = player.size * 4;
+                             ctx.drawImage(currentFrameImage, -auraSize / 2, -auraSize / 2, auraSize, auraSize);
+                         }
+                     } else if (auraColor === 'greenAura') {
+                         const currentFrameImage = greenAuraFrames[currentGreenAuraFrame];
                          if (currentFrameImage && currentFrameImage.complete) {
                              const auraSize = player.size * 4;
                              ctx.drawImage(currentFrameImage, -auraSize / 2, -auraSize / 2, auraSize, auraSize);
@@ -1909,16 +1971,27 @@
             }
             function drawPowerUps() {
                 powerUps.forEach(powerUp => {
-                    const radius = powerUp.radius;
-                    ctx.save();
-                    ctx.translate(powerUp.x, powerUp.y);
-                    ctx.beginPath();
-                    ctx.fillStyle = '#FFD700';
-                    ctx.shadowColor = '#FFD700';
-                    ctx.shadowBlur = 10;
-                    ctx.fillRect(-radius, -radius * 0.7, radius * 2, radius * 1.4);
-                    ctx.fillRect(-radius * 0.3, -radius * 1.1, radius * 0.6, radius * 0.4);
-                    ctx.restore();
+                    const currentFrameImage = wrenchFrames[currentWrenchFrame];
+                    if (currentFrameImage && currentFrameImage.complete) {
+                        const radius = powerUp.radius;
+                        ctx.save();
+                        ctx.shadowColor = '#FFFF00';
+                        ctx.shadowBlur = 15;
+                        ctx.drawImage(currentFrameImage, powerUp.x - radius, powerUp.y - radius, radius * 2, radius * 2);
+                        ctx.restore();
+                    } else {
+                        // Fallback drawing
+                        const radius = powerUp.radius;
+                        ctx.save();
+                        ctx.translate(powerUp.x, powerUp.y);
+                        ctx.beginPath();
+                        ctx.fillStyle = '#FFD700';
+                        ctx.shadowColor = '#FFD700';
+                        ctx.shadowBlur = 10;
+                        ctx.fillRect(-radius, -radius * 0.7, radius * 2, radius * 1.4);
+                        ctx.fillRect(-radius * 0.3, -radius * 1.1, radius * 0.6, radius * 0.4);
+                        ctx.restore();
+                    }
                 });
                 healthPacks.forEach(healthPack => {
                     const currentFrameImage = heartFrames[currentHeartFrame];
@@ -2082,7 +2155,7 @@
                 let vy = speed * Math.sin(angleToCenter);
                 coinMultipliers.push({ x, y, radius, vx, vy, color: '#FFD700' });
             }
-            
+                        
             // --- Shop Menu Functions ---
             function showShopMessage(title, message) {
                 const messageBox = document.createElement('div');
@@ -2229,7 +2302,7 @@
                 coinMultiplierUpgradeDiv.className = `upgrade-option ${!canUpgradeCoinMultiplier ? 'locked' : ''}`;
                 coinMultiplierUpgradeDiv.innerHTML = `<div class="skin-option-content"><canvas id="powerup-canvas-coinMultiplier" width="60" height="60"></canvas><h3>${coinMultiplierUpgradeInfo.name} Upgrade</h3></div><p>Current Level: ${coinMultiplierUpgradeLevel} / ${maxCoinMultiplierLevel}</p><p>Duration: ${currentCoinMultiplierDuration}s</p><span class="unlock-cost">${isMaxCoinMultiplier ? 'Max Level' : `Cost: ${coinMultiplierUpgradeCost} Coins`}</span><button class="purchase-button" id="coin-multiplier-upgrade-btn" ${!canUpgradeCoinMultiplier ? 'disabled' : ''}>Upgrade</button>`;
                 powerupsOptionsContainer.appendChild(coinMultiplierUpgradeDiv);
-                
+                                
                 document.getElementById('health-upgrade-btn').addEventListener('click', () => {
                     if (canUpgradeHealth) {
                         purchaseSound.triggerAttackRelease("C5", "8n");
@@ -2331,7 +2404,7 @@
                     gameLoop();
                 }
             }
-            
+                        
             // --- Event Listeners ---
             startPlayBtn.addEventListener('click', startIntro);
             startGameBtnInMenu.addEventListener('click', newGame);
