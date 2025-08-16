@@ -486,6 +486,28 @@
                 opacity: 1;
             }
         }
+        #mute-btn {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            z-index: 1001;
+        }
+        .music-icon {
+            width: 40px;
+            height: 40px;
+            fill: #00ffcc;
+        }
+        .music-icon.muted .cross {
+            display: block;
+        }
+        .music-icon .cross {
+            display: none;
+            stroke: red;
+            stroke-width: 5;
+        }
         @media (min-width: 768px) {
             #start-screen h1 {
                 font-size: 4rem;
@@ -629,6 +651,12 @@
                 </div>
             </div>
         </div>
+        <button id="mute-btn">
+            <svg class="music-icon" viewBox="0 0 24 24">
+                <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6zm-2 16c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/>
+                <line class="cross" x1="4" y1="4" x2="20" y2="20"/>
+            </svg>
+        </button>
     </div>
     <script>
         window.onload = function () {
@@ -672,6 +700,7 @@
             const instructionsBtnGameover = document.getElementById('instructions-btn-gameover');
             const instructionsBackBtn = document.getElementById('instructions-back-btn');
             const reviveBtn = document.getElementById('revive-btn');
+            const muteBtn = document.getElementById('mute-btn');
 
             // --- Game State Variables ---
             let animationFrameId;
@@ -687,6 +716,7 @@
             let doubleBeamTimer = 0;
             let doubleCoinsActive = false;
             let doubleCoinsTimer = 0;
+            let isMuted = false;
 
             let asteroids = [];
             let powerUps = [];
@@ -878,6 +908,12 @@
             const revivedSound = new Audio('music/revived.mp3');
             const clickSound = new Audio('music/click.mp3');
             const purchaseSoundFile = new Audio('music/purchase.mp3');
+            const fireSound = new Audio('music/fire.mp3');
+            fireSound.loop = true;
+            fireSound.volume = 0.5;
+            const shopMusic = new Audio('music/shop.mp3');
+            shopMusic.loop = true;
+            shopMusic.volume = 0.4;
             const shipSounds = {
                 'ironMan': new Audio('music/iron.mp3'),
                 'greenHulk': new Audio('music/hulk.mp3'),
@@ -1122,7 +1158,7 @@
                 });
             });
 
-            const audioFiles = [introMusic, mainMenuMusicFile, gameOverMusic, gameMusic, waveSoundEffect, revivedSound, clickSound, purchaseSoundFile, ...Object.values(shipSounds)];
+            const audioFiles = [introMusic, mainMenuMusicFile, gameOverMusic, gameMusic, waveSoundEffect, revivedSound, clickSound, purchaseSoundFile, fireSound, shopMusic, ...Object.values(shipSounds)];
             const audioPromises = audioFiles.map(audio => {
                 return new Promise((resolve) => {
                     audio.addEventListener('canplaythrough', resolve, { once: true });
@@ -1249,14 +1285,17 @@
             const softRockHitSynth = new Tone.NoiseSynth({ noise: { type: "brown" }, envelope: { attack: 0.02, decay: 0.3, sustain: 0, release: 0.1 } }).toDestination();
             
             function playClickSound() {
+                if (isMuted) return;
                 clickSound.currentTime = 0;
                 clickSound.play();
             }
              function playPurchaseSound() {
+                if (isMuted) return;
                 purchaseSoundFile.currentTime = 0;
                 purchaseSoundFile.play();
             }
             function playIntroMusic() {
+                if (isMuted) return;
                 introMusic.currentTime = 0;
                 introMusic.play().catch(e => console.error("Intro audio play failed. User may need to interact with the page first.", e));
             }
@@ -1265,23 +1304,23 @@
                 introMusic.currentTime = 0;
             }
             function playMainMenuMusic() {
+                if (isMuted) return;
                 mainMenuMusicFile.currentTime = 0;
                 mainMenuMusicFile.play().catch(e => console.error("Main menu audio play failed.", e));
             }
             function playGameOverMusic() {
+                if (isMuted) return;
                 gameOverMusic.currentTime = 0;
                 gameOverMusic.play().catch(e => console.error("Game over audio play failed.", e));
             }
             function stopAllMusic() {
-                stopIntroMusic();
+                introMusic.pause();
                 mainMenuMusicFile.pause();
-                mainMenuMusicFile.currentTime = 0;
                 gameOverMusic.pause();
-                gameOverMusic.currentTime = 0;
                 gameMusic.pause();
-                gameMusic.currentTime = 0;
                 waveSoundEffect.pause();
-                waveSoundEffect.currentTime = 0;
+                shopMusic.pause();
+                fireSound.pause();
                 Object.values(shipSounds).forEach(sound => {
                     sound.pause();
                     sound.currentTime = 0;
@@ -1347,7 +1386,7 @@
                 gamePaused = false;
                 showScreen('game');
                 stopAllMusic();
-                gameMusic.play();
+                if (!isMuted) gameMusic.play();
                 gameLoop();
             }
 
@@ -1515,14 +1554,14 @@
                     const currentShipSound = shipSounds[player.skin];
                     if (currentShipSound) {
                         currentShipSound.currentTime = 0;
-                        currentShipSound.play();
+                        if (!isMuted) currentShipSound.play();
                         currentShipSound.onended = () => {
                             if (!gameOver && !gamePaused) {
-                                gameMusic.play();
+                                if (!isMuted) gameMusic.play();
                             }
                         };
                     } else {
-                         gameMusic.play();
+                         if (!isMuted) gameMusic.play();
                     }
                 }
 
@@ -1776,7 +1815,7 @@
                             
                             gameMusic.pause();
                             waveSoundEffect.currentTime = 0;
-                            waveSoundEffect.play();
+                            if (!isMuted) waveSoundEffect.play();
 
                             beamRemoved = true;
                             break;
@@ -1817,8 +1856,8 @@
                             playerHealth += health_restore;
                             if (playerHealth > 100) playerHealth = 100;
                             playerHealthDisplay.innerText = Math.ceil(playerHealth);
-                            // --- MODIFIED: Removed clearInterval ---
                             isPlayerOnFire = false;
+                            fireSound.pause();
                             beamRemoved = true;
                             break;
                         }
@@ -1861,8 +1900,10 @@
                         playerHealth -= damage.player;
                         if (playerHealth < 0) playerHealth = 0;
                         playerHealthDisplay.innerText = Math.ceil(playerHealth);
-                        // --- MODIFIED: Removed setInterval ---
-                        isPlayerOnFire = true;
+                        if (!isPlayerOnFire) {
+                            isPlayerOnFire = true;
+                            if (!isMuted) fireSound.play();
+                        }
                         asteroids.splice(i, 1);
                         if (playerHit) break;
                     }
@@ -2586,7 +2627,7 @@
                             const shipSound = shipSounds[key];
                             if(shipSound) {
                                 shipSound.currentTime = 0;
-                                shipSound.play();
+                                if (!isMuted) shipSound.play();
                             }
                             player.skin = key;
                             localStorage.setItem('orbitDashCurrentSkin', key);
@@ -2704,6 +2745,8 @@
                 playClickSound();
                 previousScreen = 'mainMenu';
                 showScreen('shopMenu');
+                stopAllMusic();
+                if (!isMuted) shopMusic.play();
                 skinsOptionsContainer.style.display = 'flex';
                 powerupsOptionsContainer.style.display = 'none';
                 skinsTabBtn.classList.add('active');
@@ -2734,6 +2777,8 @@
                 gamePaused = true;
                 if (animationFrameId) { cancelAnimationFrame(animationFrameId); }
                 showScreen('instructions');
+                stopAllMusic();
+                if (!isMuted) shopMusic.play();
             }
 
             function backFromInstructions() {
@@ -2777,7 +2822,7 @@
                 if (coins >= reviveCost) {
                     reviveBtn.disabled = true; // Disable button to prevent spamming
                     stopAllMusic();
-                    revivedSound.play();
+                    if (!isMuted) revivedSound.play();
 
                     revivedSound.onended = () => {
                         speak("Revived", "Autonoe");
@@ -2820,7 +2865,21 @@
 
             waveSoundEffect.addEventListener('ended', () => {
                 if (isGameStarted && !gameOver && !gamePaused) {
-                    gameMusic.play();
+                    if (!isMuted) gameMusic.play();
+                }
+            });
+
+            muteBtn.addEventListener('click', () => {
+                isMuted = !isMuted;
+                const icon = muteBtn.querySelector('.music-icon');
+                if (isMuted) {
+                    icon.classList.add('muted');
+                    Tone.Master.mute = true;
+                    audioFiles.forEach(audio => audio.muted = true);
+                } else {
+                    icon.classList.remove('muted');
+                    Tone.Master.mute = false;
+                    audioFiles.forEach(audio => audio.muted = false);
                 }
             });
 
