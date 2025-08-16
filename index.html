@@ -708,6 +708,7 @@
             const fireFrameCount = 75;
             let currentFireFrame = 0;
             const fireAnimationSpeed = 2; // Faster for a flickering effect
+            let fireDamageInterval = null; // To hold the interval ID
             // --- Earth Animation Variables ---
             let earthFrames = [];
             const earthFrameCount = 6;
@@ -1196,6 +1197,7 @@
                 gameOver = true;
                 isGameStarted = false;
                 if (animationFrameId) { cancelAnimationFrame(animationFrameId); }
+                if (fireDamageInterval) { clearInterval(fireDamageInterval); fireDamageInterval = null; } // Stop fire damage on game over
                 speak("Game Over", "Kore");
                 document.getElementById('game-over-title').innerText = 'Game Over';
                 document.getElementById('game-over-message').innerText = message;
@@ -1299,6 +1301,7 @@
                 buttonClickSynth.triggerAttackRelease("C5", "8n");
                 showScreen('game');
                 stopAllMusic();
+                if (fireDamageInterval) { clearInterval(fireDamageInterval); fireDamageInterval = null; }
                 isGameStarted = true;
                 asteroidSpeed = 1.2;
                 player.speed = 0.02;
@@ -1321,7 +1324,7 @@
                 earthCracks = [];
                 isExploding = false;
                 isPlayerExploding = false;
-                isPlayerOnFire = false; // Reset fire state
+                isPlayerOnFire = false;
                 explosionParticles = [];
                 hitExplosions = [];
                 frameCount = 0;
@@ -1340,6 +1343,15 @@
                 gameLoop();
             }
             function gameLoop() {
+                if (gameOver) return;
+                
+                if (playerHealth <= 0 && !isPlayerExploding && !gameOver) {
+                    isPlayerExploding = true;
+                    playerExplosionPos = { x: player.x, y: player.y };
+                    currentBlastFrame = 0;
+                    explosionNoise.triggerAttackRelease("1s");
+                }
+
                 if (gamePaused) return;
                 if (isPlayerExploding) {
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -1362,7 +1374,7 @@
                     animationFrameId = requestAnimationFrame(gameLoop);
                     return;
                 }
-                if (gameOver) return;
+                
                 if (frameCount % earthAnimationSpeed === 0) { currentEarthFrame = (currentEarthFrame + 1) % earthFrameCount; }
                 if (frameCount % lavaAnimationSpeed === 0) { currentLavaFrame = (currentLavaFrame + 1) % lavaFrameCount; }
                 if (frameCount % fireAnimationSpeed === 0) { currentFireFrame = (currentFireFrame + 1) % fireFrameCount; }
@@ -1382,7 +1394,7 @@
                 drawStars();
                 drawPlanet();
                 drawPlayer();
-                drawPlayerFire(); // Draw fire on top of player
+                drawPlayerFire();
                 drawImpactExplosions();
                 drawHitExplosions();
                 drawAsteroids();
@@ -1577,8 +1589,9 @@
                             let health_restore = UPGRADES.health.base_restore + (UPGRADES.health.level_restore_increase * healthUpgradeLevel);
                             playerHealth += health_restore;
                             if (playerHealth > 100) playerHealth = 100;
-                            playerHealthDisplay.innerText = playerHealth;
-                            isPlayerOnFire = false; // Extinguish fire
+                            playerHealthDisplay.innerText = Math.ceil(playerHealth);
+                            isPlayerOnFire = false;
+                            if (fireDamageInterval) { clearInterval(fireDamageInterval); fireDamageInterval = null; }
                             beamRemoved = true;
                             break;
                         }
@@ -1628,15 +1641,17 @@
                         const damage = getAsteroidDamage(asteroid);
                         playerHealth -= damage.player;
                         if (playerHealth < 0) playerHealth = 0;
-                        playerHealthDisplay.innerText = playerHealth;
-                        isPlayerOnFire = true; // Ignite fire
-                        asteroids.splice(i, 1);
-                        if (playerHealth <= 0 && !isPlayerExploding) {
-                            isPlayerExploding = true;
-                            playerExplosionPos = { x: player.x, y: player.y };
-                            currentBlastFrame = 0;
-                            explosionNoise.triggerAttackRelease("1s");
+                        playerHealthDisplay.innerText = Math.ceil(playerHealth);
+                        isPlayerOnFire = true;
+                        if (!fireDamageInterval) {
+                            fireDamageInterval = setInterval(() => {
+                                if (!gamePaused && isPlayerOnFire && playerHealth > 0) {
+                                    playerHealth -= 0.5;
+                                    playerHealthDisplay.innerText = Math.ceil(playerHealth);
+                                }
+                            }, 1000);
                         }
+                        asteroids.splice(i, 1);
                         if (playerHit) break;
                     }
                 }
@@ -1698,7 +1713,7 @@
                 const impactY = planet.y + (planet.radius - 5) * Math.sin(impactAngle);
                 earthCracks.push({ image: selectedImage, x: impactX, y: impactY, angle: impactAngle, timer: 90 });
             }
-           
+            
             function drawCracks() {
                 earthCracks.forEach(crack => {
                     if (crack.image.complete) {
@@ -1899,9 +1914,7 @@
                 if (isPlayerOnFire) {
                     const currentFrameImage = fireFrames[currentFireFrame];
                     if (currentFrameImage && currentFrameImage.complete) {
-                        // --- MODIFICATION START: Reduced fire size ---
                         const fireSize = player.size * 2.5; 
-                        // --- MODIFICATION END ---
                         ctx.save();
                         ctx.translate(player.x, player.y);
                         ctx.drawImage(currentFrameImage, -fireSize / 2, -fireSize / 2, fireSize, fireSize);
@@ -1918,7 +1931,11 @@
                     }
                 } else {
                     isPlayerExploding = false;
-                    endGame("Your ship was destroyed by an asteroid!");
+                    if (isPlayerOnFire) {
+                        endGame("Your ship was destroyed internally by the fire!");
+                    } else {
+                        endGame("Your ship was destroyed by an asteroid!");
+                    }
                 }
             }
             function drawImpactExplosions() {
@@ -2276,10 +2293,8 @@
                             requirements.push(`${skin.price} Coins`);
                         }
                         statusText = `Requires: ${requirements.join(' & ')}`;
-                        // --- MODIFICATION START: Add 'unlockable' class if requirements are met ---
                         const unlockableClass = (hasEnoughCoins && hasHighScore) ? 'unlockable' : '';
                         buttonHtml = `<button class="purchase-button ${unlockableClass}" data-action="unlock">Unlock</button>`;
-                        // --- MODIFICATION END ---
                     }
                     optionDiv.innerHTML = `<div class="skin-option-content"><canvas id="skin-canvas-${key}" width="60" height="60"></canvas><h3>${skin.name}</h3></div><span class="unlock-cost">${statusText}</span>${buttonHtml}`;
                     skinsOptionsContainer.appendChild(optionDiv);
@@ -2474,6 +2489,7 @@
                     earthHealth = 100;
                     earthHealthDisplay.innerText = 100;
                     isPlayerOnFire = false; // Extinguish fire on revive
+                    if (fireDamageInterval) { clearInterval(fireDamageInterval); fireDamageInterval = null; }
                     reviveCount++;
                     gameOver = false;
                     gamePaused = false;
