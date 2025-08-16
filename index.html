@@ -866,9 +866,11 @@
             const beamImages = {};
             const introMusic = new Audio('music/intro.mp3');
             introMusic.loop = true;
-            // --- MODIFIED: Added main.mp3 audio file ---
             const mainMenuMusicFile = new Audio('music/main.mp3');
             mainMenuMusicFile.loop = true;
+            // --- MODIFIED: Added gameover.mp3 audio file ---
+            const gameOverMusic = new Audio('music/gameover.mp3');
+            gameOverMusic.loop = true;
 
             const asteroidTailImage = new Image();
             asteroidTailImage.src = 'images/tail.png';
@@ -1105,7 +1107,7 @@
                 });
             });
 
-            const audioPromises = [introMusic, mainMenuMusicFile].map(audio => {
+            const audioPromises = [introMusic, mainMenuMusicFile, gameOverMusic].map(audio => {
                 return new Promise((resolve) => {
                     audio.addEventListener('canplaythrough', resolve, { once: true });
                     audio.onerror = () => {
@@ -1220,7 +1222,6 @@
 
             const beamSynth = new Tone.Synth({ oscillator: { type: "triangle" }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.05, release: 0.1 }, volume: -10 }).toDestination();
             const crashNoise = new Tone.NoiseSynth({ noise: { type: "brown" }, envelope: { attack: 0.005, decay: 0.1, sustain: 0, release: 0.1 } }).toDestination();
-            const gameOverNoise = new Tone.NoiseSynth({ noise: { type: "white" }, envelope: { attack: 0.005, decay: 0.5, sustain: 0, release: 0.5 } }).connect(new Tone.Filter(1000, "highpass")).toDestination();
             const repairSynth = new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.2, release: 0.3 } }).toDestination();
             const shimmerSynth = new Tone.MetalSynth({ frequency: 200, envelope: { attack: 0.001, decay: 0.2, release: 0.1 }, harmonicity: 3.1, modulationIndex: 10, resonance: 800, octaves: 1.5 }).toDestination();
             const pulseSynth = new Tone.MembraneSynth().toDestination();
@@ -1231,7 +1232,6 @@
             const lavaSound = new Tone.FMSynth({ harmonicity: 3.01, modulationIndex: 14, envelope: { attack: 0.2, decay: 0.3, sustain: 0.1, release: 1.2 }, modulation: { type: "square" }, modulationEnvelope: { attack: 0.2, decay: 0.1, sustain: 0.1, release: 0.1 } }).toDestination();
             const crackSound = new Tone.NoiseSynth({ noise: { type: "pink" }, envelope: { attack: 0.001, decay: 0.1, sustain: 0, release: 0.1 } }).toDestination();
             const softRockHitSynth = new Tone.NoiseSynth({ noise: { type: "brown" }, envelope: { attack: 0.02, decay: 0.3, sustain: 0, release: 0.1 } }).toDestination();
-            const webSound = new Tone.NoiseSynth({ noise: { type: "pink" }, envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.1 } }).toDestination();
             const purchaseSound = new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.05, decay: 0.2, sustain: 0, release: 0.3 }, volume: -10 }).toDestination();
 
             function playIntroMusic() {
@@ -1242,15 +1242,21 @@
                 introMusic.pause();
                 introMusic.currentTime = 0;
             }
-            // --- MODIFIED: Updated main menu music functions ---
             function playMainMenuMusic() {
                 mainMenuMusicFile.currentTime = 0;
                 mainMenuMusicFile.play().catch(e => console.error("Main menu audio play failed.", e));
+            }
+            // --- MODIFIED: Added function for game over music ---
+            function playGameOverMusic() {
+                gameOverMusic.currentTime = 0;
+                gameOverMusic.play().catch(e => console.error("Game over audio play failed.", e));
             }
             function stopAllMusic() {
                 stopIntroMusic();
                 mainMenuMusicFile.pause();
                 mainMenuMusicFile.currentTime = 0;
+                gameOverMusic.pause();
+                gameOverMusic.currentTime = 0;
             }
 
             // --- UI Management ---
@@ -1299,7 +1305,8 @@
                 previousScreen = 'gameOver';
                 showScreen('gameOver');
                 stopAllMusic();
-                playMainMenuMusic();
+                // --- MODIFIED: Play game over music ---
+                playGameOverMusic();
             }
 
             function backToMainMenu() {
@@ -1378,7 +1385,8 @@
                             introCtx.closePath();
                             introCtx.stroke();
                         }
-                        webSound.triggerAttackRelease("16n");
+                        // --- MODIFIED: Removed web sound ---
+                        // webSound.triggerAttackRelease("16n");
                         introFrameId = requestAnimationFrame(animateWeb);
                     } else if (!textVisible) {
                         presentedBy.style.opacity = 1;
