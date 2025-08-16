@@ -676,8 +676,8 @@
             let stars = [];
             let redBombs = [];
             let coinMultipliers = [];
-            let asteroidSpawnRate = 70;
-            let asteroidSpeed = 0.6;
+            let asteroidSpawnRate = 35; // Faster spawn rate
+            let asteroidSpeed = 1.2; // Medium pace
             // Set power-up spawn rates in frames
             const powerUpSpawnInterval = 15 * 60;
             const redBombSpawnInterval = 15 * 60;
@@ -720,18 +720,18 @@
             let heartFrames = [];
             const heartFrameCount = 6;
             let currentHeartFrame = 0;
-            const heartAnimationSpeed = 10;
-             // --- Red Aura Animation Variables ---
+            const heartAnimationSpeed = 10; 
+            // --- Red Aura Animation Variables ---
             let redAuraFrames = [];
             const redAuraFrameCount = 13;
             let currentRedAuraFrame = 0;
-            const redAuraAnimationSpeed = 5;
-             // --- Green Aura Animation Variables ---
+            const redAuraAnimationSpeed = 5; 
+            // --- Green Aura Animation Variables ---
             let greenAuraFrames = [];
             const greenAuraFrameCount = 13;
             let currentGreenAuraFrame = 0;
-            const greenAuraAnimationSpeed = 5;
-             // --- Yellow Aura Animation Variables ---
+            const greenAuraAnimationSpeed = 5; 
+            // --- Yellow Aura Animation Variables ---
             let yellowAuraFrames = [];
             const yellowAuraFrameCount = 12;
             let currentYellowAuraFrame = 0;
@@ -745,8 +745,8 @@
             let wrenchFrames = [];
             const wrenchFrameCount = 5;
             let currentWrenchFrame = 0;
-            const wrenchAnimationSpeed = 10;
-             // --- Blast Animation Variables ---
+            const wrenchAnimationSpeed = 10; 
+            // --- Blast Animation Variables ---
             let blastFrames = [];
             const blastFrameCount = 15;
             let currentBlastFrame = 0;
@@ -754,12 +754,15 @@
             // --- Nebula Background Variables ---
             const nebulaImage = new Image();
             let nebula = { x: 0, y: 0, speedX: 0.1, speedY: 0.05 };
-            // --- Impact Animation Variables ---
+            // --- Player Impact Animation Variables ---
             let impactFrames = [];
             const impactFrameCount = 64;
-            const impactAnimationSpeed = 3; // 60fps / 20fps = 3
             let impactExplosions = [];
-            // --- Earth Explosion Animation Variables (FIXED) ---
+            // --- Asteroid Hit Animation Variables ---
+            let hitFrames = [];
+            const hitFrameCount = 64;
+            let hitExplosions = [];
+            // --- Earth Explosion Animation Variables ---
             let earthExplosionFrames = [];
             const earthExplosionFrameCount = 16;
             let currentEarthExplosionFrame = 0;
@@ -818,85 +821,73 @@
             };
             let healthUpgradeLevel = parseInt(localStorage.getItem('healthUpgradeLevel') || 0);
             let doubleBeamUpgradeLevel = parseInt(localStorage.getItem('doubleBeamUpgradeLevel') || 0);
-            let coinMultiplierUpgradeLevel = parseInt(localStorage.getItem('coinMultiplierUpgradeLevel') || 0);
-                                
+            let coinMultiplierUpgradeLevel = parseInt(localStorage.getItem('coinMultiplierUpgradeLevel') || 0);                                    
             // --- Asset Loading ---
             const assetsToLoad = [];
             const beamImages = {};
-
-            nebulaImage.src = ' images/nebula3.png';
+            nebulaImage.src = 'images/nebula3.png';
             nebulaImage.onerror = () => nebulaImage.src = 'https://placehold.co/800x800/1a1a33/ffffff?text=Nebula+Not+Found';
             assetsToLoad.push(nebulaImage);
-
             const ironManImage = new Image();
-            ironManImage.src = ' images/Ironman.png';
+            ironManImage.src = 'images/Ironman.png';
             ironManImage.onerror = () => ironManImage.src = 'https://placehold.co/100x100/ff0000/ffffff?text=IronMan';
-            assetsToLoad.push(ironManImage);
-                                
+            assetsToLoad.push(ironManImage);                                    
             const greenHulkImage = new Image();
-            greenHulkImage.src = ' images/hulk.png';
+            greenHulkImage.src = 'images/hulk.png';
             greenHulkImage.onerror = () => greenHulkImage.src = 'https://placehold.co/100x100/00ff00/ffffff?text=Hulk';
             assetsToLoad.push(greenHulkImage);
-
             const blackWidowImage = new Image();
-            blackWidowImage.src = ' images/widow.png';
+            blackWidowImage.src = 'images/widow.png';
             blackWidowImage.onerror = () => blackWidowImage.src = 'https://placehold.co/100x100/000000/ffffff?text=Widow';
             assetsToLoad.push(blackWidowImage);
-
             const captainAmericaImage = new Image();
-            captainAmericaImage.src = ' images/captain.png';
+            captainAmericaImage.src = 'images/captain.png';
             captainAmericaImage.onerror = () => captainAmericaImage.src = 'https://placehold.co/100x100/0000ff/ffffff?text=Cap';
-            assetsToLoad.push(captainAmericaImage);
-                                
+            assetsToLoad.push(captainAmericaImage);                                    
             const pantherGulluImage = new Image();
-            pantherGulluImage.src = ' images/panther.png';
+            pantherGulluImage.src = 'images/panther.png';
             pantherGulluImage.onerror = () => pantherGulluImage.src = 'https://placehold.co/100x100/8A2BE2/ffffff?text=Panther';
             assetsToLoad.push(pantherGulluImage);
-
             const spidyGulluImage = new Image();
-            spidyGulluImage.src = ' images/spidy.png';
+            spidyGulluImage.src = 'images/spidy.png';
             spidyGulluImage.onerror = () => spidyGulluImage.src = 'https://placehold.co/100x100/FF0000/ffffff?text=Spidy';
             assetsToLoad.push(spidyGulluImage);
-
             // Beam Images
             beamImages['ironMan'] = new Image();
-            beamImages['ironMan'].src = ' images/beam1.png';
+            beamImages['ironMan'].src = 'images/beam1.png';
             beamImages['greenHulk'] = new Image();
-            beamImages['greenHulk'].src = ' images/beam2.png';
+            beamImages['greenHulk'].src = 'images/beam2.png';
             beamImages['blackWidow'] = new Image();
-            beamImages['blackWidow'].src = ' images/beam3.png';
+            beamImages['blackWidow'].src = 'images/beam3.png';
             beamImages['captainAmerica'] = new Image();
-            beamImages['captainAmerica'].src = ' images/beam4.png';
+            beamImages['captainAmerica'].src = 'images/beam4.png';
             beamImages['pantherGullu'] = new Image();
-            beamImages['pantherGullu'].src = ' images/beam5.png';
+            beamImages['pantherGullu'].src = 'images/beam5.png';
             beamImages['spidyGullu'] = new Image();
-            beamImages['spidyGullu'].src = ' images/beam6.png';
-
+            beamImages['spidyGullu'].src = 'images/beam6.png';
             for (const key in beamImages) {
                 beamImages[key].onerror = () => beamImages[key].src = `https://placehold.co/20x20/ffffff/000000?text=B`;
                 assetsToLoad.push(beamImages[key]);
             }
-
             // Crack Images
             const crackImageSmall = new Image();
             const crackImageMedium = new Image();
             const crackImageLarge = new Image();
-            crackImageSmall.src = ' images/crack3.png';
+            crackImageSmall.src = 'images/crack3.png';
             crackImageSmall.onerror = () => crackImageSmall.src = 'https://placehold.co/50x50/ffffff/000000?text=Crack';
-            crackImageMedium.src = ' images/crack6.png';
+            crackImageMedium.src = 'images/crack6.png';
             crackImageMedium.onerror = () => crackImageMedium.src = 'https://placehold.co/100x100/ffffff/000000?text=Crack';
-            crackImageLarge.src = ' images/crack5.png';
+            crackImageLarge.src = 'images/crack5.png';
             crackImageLarge.onerror = () => crackImageLarge.src = 'https://placehold.co/150x150/ffffff/000000?text=Crack';
-            assetsToLoad.push(crackImageSmall, crackImageMedium, crackImageLarge);
-                                
+            assetsToLoad.push(crackImageSmall, crackImageMedium, crackImageLarge);                                    
             // Earth Animation Frames
             const earthFrameURLs = [
-                ' images/frame1.png',
-                ' images/frame2.png',
-                ' images/frame3.png',
-                ' images/frame4.png',
-                ' images/frame5.png',
-                ' images/frame6.png'
+                'images/frame1.png',
+                'images/frame2.png',
+                'images/frame3.png',
+                'images/frame4.png',
+                'images/frame5.png',
+                'images/frame6.png'
             ];
             for (let i = 0; i < earthFrameCount; i++) {
                 const frameImage = new Image();
@@ -905,27 +896,25 @@
                 earthFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
-
             // Asteroid skin images
             const smallAsteroidImage = new Image();
             const mediumAsteroidImage = new Image();
             const largeAsteroidImage = new Image();
-            smallAsteroidImage.src = ' images/small.png';
+            smallAsteroidImage.src = 'images/small.png';
             smallAsteroidImage.onerror = () => smallAsteroidImage.src = 'https://placehold.co/30x30/964B00/ffffff?text=S';
-            mediumAsteroidImage.src = ' images/medium.png';
+            mediumAsteroidImage.src = 'images/medium.png';
             mediumAsteroidImage.onerror = () => mediumAsteroidImage.src = 'https://placehold.co/50x50/964B00/ffffff?text=M';
-            largeAsteroidImage.src = ' images/large.png';
+            largeAsteroidImage.src = 'images/large.png';
             largeAsteroidImage.onerror = () => largeAsteroidImage.src = 'https://placehold.co/70x70/964B00/ffffff?text=L';
-            assetsToLoad.push(smallAsteroidImage, mediumAsteroidImage, largeAsteroidImage);
-                                
+            assetsToLoad.push(smallAsteroidImage, mediumAsteroidImage, largeAsteroidImage);                                    
             // Coin animation frames
             const coinFrameURLs = [
-                ' images/coin1.png',
-                ' images/coin2.png',
-                ' images/coin3.png',
-                ' images/coin4.png',
-                ' images/coin5.png',
-                ' images/coin6.png'
+                'images/coin1.png',
+                'images/coin2.png',
+                'images/coin3.png',
+                'images/coin4.png',
+                'images/coin5.png',
+                'images/coin6.png'
             ];
             for (let i = 0; i < coinFrameCount; i++) {
                 const frameImage = new Image();
@@ -934,14 +923,13 @@
                 coinFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
-
             // Red Bomb animation frames
             const redBombFrameURLs = [
-                ' images/fatman1.png',
-                ' images/fatman2.png',
-                ' images/fatman3.png',
-                ' images/fatman4.png',
-                ' images/fatman5.png'
+                'images/fatman1.png',
+                'images/fatman2.png',
+                'images/fatman3.png',
+                'images/fatman4.png',
+                'images/fatman5.png'
             ];
             for (let i = 0; i < redBombFrameCount; i++) {
                 const frameImage = new Image();
@@ -950,15 +938,14 @@
                 redBombFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
-
             // Health Pack animation frames
             const heartFrameURLs = [
-                ' images/heart1.png',
-                ' images/heart2.png',
-                ' images/heart3.png',
-                ' images/heart4.png',
-                ' images/heart5.png',
-                ' images/heart6.png'
+                'images/heart1.png',
+                'images/heart2.png',
+                'images/heart3.png',
+                'images/heart4.png',
+                'images/heart5.png',
+                'images/heart6.png'
             ];
             for (let i = 0; i < heartFrameCount; i++) {
                 const frameImage = new Image();
@@ -967,12 +954,11 @@
                 heartFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
-
              // Red Aura animation frames
             const redAuraFrameURLs = [
-                ' images/red1.png', ' images/red2.png', ' images/red3.png', ' images/red4.png', ' images/red5.png',
-                ' images/red6.png', ' images/red7.png', ' images/red8.png', ' images/red9.png', ' images/red10.png',
-                ' images/red11.png', ' images/red12.png', ' images/red13.png'
+                'images/red1.png', 'images/red2.png', 'images/red3.png', 'images/red4.png', 'images/red5.png',
+                'images/red6.png', 'images/red7.png', 'images/red8.png', 'images/red9.png', 'images/red10.png',
+                'images/red11.png', 'images/red12.png', 'images/red13.png'
             ];
             for (let i = 0; i < redAuraFrameCount; i++) {
                 const frameImage = new Image();
@@ -981,12 +967,11 @@
                 redAuraFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
-
              // Green Aura animation frames
             const greenAuraFrameURLs = [
-                 ' images/green1.png', ' images/green2.png', ' images/green3.png', ' images/green4.png', ' images/green5.png',
-                 ' images/green6.png', ' images/green7.png', ' images/green8.png', ' images/green9.png', ' images/green10.png',
-                 ' images/green11.png', ' images/green12.png', ' images/green13.png'
+                 'images/green1.png', 'images/green2.png', 'images/green3.png', 'images/green4.png', 'images/green5.png',
+                 'images/green6.png', 'images/green7.png', 'images/green8.png', 'images/green9.png', 'images/green10.png',
+                 'images/green11.png', 'images/green12.png', 'images/green13.png'
             ];
             for (let i = 0; i < greenAuraFrameCount; i++) {
                  const frameImage = new Image();
@@ -994,12 +979,12 @@
                  frameImage.onerror = () => frameImage.src = `https://placehold.co/50x50/00ff00/ffffff?text=G${i+1}`;
                  greenAuraFrames.push(frameImage);
                  assetsToLoad.push(frameImage);
-            }
+            } 
              // Yellow Aura animation frames
             const yellowAuraFrameURLs = [
-                 ' images/yellow1.png', ' images/yellow2.png', ' images/yellow3.png', ' images/yellow4.png', ' images/yellow5.png',
-                 ' images/yellow6.png', ' images/yellow7.png', ' images/yellow8.png', ' images/yellow9.png', ' images/yellow10.png',
-                 ' images/yellow11.png', ' images/yellow12.png'
+                 'images/yellow1.png', 'images/yellow2.png', 'images/yellow3.png', 'images/yellow4.png', 'images/yellow5.png',
+                 'images/yellow6.png', 'images/yellow7.png', 'images/yellow8.png', 'images/yellow9.png', 'images/yellow10.png',
+                 'images/yellow11.png', 'images/yellow12.png'
             ];
             for (let i = 0; i < yellowAuraFrameCount; i++) {
                  const frameImage = new Image();
@@ -1007,11 +992,10 @@
                  frameImage.onerror = () => frameImage.src = `https://placehold.co/50x50/ffff00/ffffff?text=Y${i+1}`;
                  yellowAuraFrames.push(frameImage);
                  assetsToLoad.push(frameImage);
-            }
-            
-             // Ray Aura animation frames
+            }                         
+            // Ray Aura animation frames
             const rayAuraFrameURLs = [
-                ' images/ray1.png', ' images/ray2.png', ' images/ray3.png', ' images/ray4.png', ' images/ray5.png'
+                'images/ray1.png', 'images/ray2.png', 'images/ray3.png', 'images/ray4.png', 'images/ray5.png'
             ];
             for (let i = 0; i < rayAuraFrameCount; i++) {
                 const frameImage = new Image();
@@ -1020,14 +1004,13 @@
                 rayAuraFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
-
              // Wrench animation frames
             const wrenchFrameURLs = [
-                ' images/wrench1.png',
-                ' images/wrench2.png',
-                ' images/wrench3.png',
-                ' images/wrench4.png',
-                ' images/wrench5.png'
+                'images/wrench1.png',
+                'images/wrench2.png',
+                'images/wrench3.png',
+                'images/wrench4.png',
+                'images/wrench5.png'
             ];
             for (let i = 0; i < wrenchFrameCount; i++) {
                 const frameImage = new Image();
@@ -1036,12 +1019,11 @@
                 wrenchFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
-
              // Blast animation frames
             const blastFrameURLs = [
-                ' images/blast1.png', ' images/blast2.png', ' images/blast3.png', ' images/blast4.png', ' images/blast5.png',
-                ' images/blast6.png', ' images/blast7.png', ' images/blast8.png', ' images/blast9.png', ' images/blast10.png',
-                ' images/blast11.png', ' images/blast12.png', ' images/blast13.png', ' images/blast14.png', ' images/blast15.png'
+                'images/blast1.png', 'images/blast2.png', 'images/blast3.png', 'images/blast4.png', 'images/blast5.png',
+                'images/blast6.png', 'images/blast7.png', 'images/blast8.png', 'images/blast9.png', 'images/blast10.png',
+                'images/blast11.png', 'images/blast12.png', 'images/blast13.png', 'images/blast14.png', 'images/blast15.png'
             ];
             for (let i = 0; i < blastFrameCount; i++) {
                 const frameImage = new Image();
@@ -1050,25 +1032,31 @@
                 blastFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
-
-            // Impact animation frames
+            // Player Impact animation frames
             for (let i = 1; i <= impactFrameCount; i++) {
                 const frameImage = new Image();
-                frameImage.src = ` images/impact${i}.png`;
+                frameImage.src = `images/impact${i}.png`;
                 frameImage.onerror = () => frameImage.src = `https://placehold.co/100x100/ff9900/ffffff?text=Impact${i}`;
                 impactFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
-            
-            // --- Earth Explosion animation frames (FIXED) ---
+            // Asteroid Hit animation frames
+            for (let i = 0; i < hitFrameCount; i++) {
+                const frameImage = new Image();
+                const frameNumber = i.toString().padStart(2, '0');
+                frameImage.src = `images/${frameNumber}_hit.png`;
+                frameImage.onerror = () => frameImage.src = `https://placehold.co/100x100/ff9900/ffffff?text=Hit${i}`;
+                hitFrames.push(frameImage);
+                assetsToLoad.push(frameImage);
+            }                        
+            // Earth Explosion animation frames
             for (let i = 1; i <= earthExplosionFrameCount; i++) {
                 const frameImage = new Image();
-                frameImage.src = ` images/explosion${i}.png`;
+                frameImage.src = `images/explosion${i}.png`;
                 frameImage.onerror = () => frameImage.src = `https://placehold.co/100x100/ff5733/ffffff?text=Boom${i}`;
                 earthExplosionFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
-
 
             let loadedAssets = 0;
             const totalAssets = assetsToLoad.length;
@@ -1093,8 +1081,7 @@
                         assetLoaded(); // Still count it as "loaded" to not block the game
                     };
                 }
-            });
-                                
+            });                                    
             // --- TTS Functions ---
             function base64ToArrayBuffer(base64) {
                 const binaryString = window.atob(base64);
@@ -1179,8 +1166,7 @@
                 } catch (error) {
                     console.error('Error in TTS API call:', error);
                 }
-            }
-                                
+            }                                    
             // --- Tone.js Sound Effects ---
             const beamSynth = new Tone.Synth({ oscillator: { type: "triangle" }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.05, release: 0.1 }, volume: -10 }).toDestination();
             const crashNoise = new Tone.NoiseSynth({ noise: { type: "brown" }, envelope: { attack: 0.005, decay: 0.1, sustain: 0, release: 0.1 } }).toDestination();
@@ -1198,8 +1184,7 @@
             const introSpaceSound = new Tone.PolySynth(Tone.Synth, { oscillator: { type: "sine" }, envelope: { attack: 4, decay: 2, sustain: 0, release: 4 } }).toDestination();
             const webSound = new Tone.NoiseSynth({ noise: { type: "pink" }, envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.1 } }).toDestination();
             const mainMenuAmbient = new Tone.PolySynth(Tone.Synth, { oscillator: { type: "triangle" }, envelope: { attack: 0.05, decay: 0.5, sustain: 0.1, release: 1 }, volume: -10 }).toDestination();
-            const purchaseSound = new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.05, decay: 0.2, sustain: 0, release: 0.3 }, volume: -10 }).toDestination();
-                                
+            const purchaseSound = new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.05, decay: 0.2, sustain: 0, release: 0.3 }, volume: -10 }).toDestination();                                    
             function playIntroMusic() {
                 introSpaceSound.triggerAttackRelease(["C3", "G3", "D4"], "4s");
             }
@@ -1215,7 +1200,6 @@
             function stopAllMusic() {
                 mainMenuAmbient.releaseAll();
             }
-
             // --- UI Management ---
             function showScreen(screenId) {
                 startScreen.style.display = 'none';
@@ -1304,8 +1288,7 @@
                     reviveBtn.disabled = true;
                 }
                 showGameOverMenu();
-            }
-                                
+            }                                    
             // --- Intro Sequence ---
             let introFrameId = null;
             let introActive = false;
@@ -1384,7 +1367,6 @@
                     stopIntro();
                 }
             }
-
             // --- Game Setup and Loop ---
             function resizeCanvas() {
                 canvas.width = Math.min(window.innerWidth * 0.9, window.innerHeight * 0.9);
@@ -1403,9 +1385,9 @@
                 showScreen('game');
                 stopAllMusic();
                 isGameStarted = true;
-                asteroidSpeed = 0.6;
+                asteroidSpeed = 1.2;
                 player.speed = 0.02;
-                asteroidSpawnRate = 70;
+                asteroidSpawnRate = 35;
                 score = 0;
                 earthHealth = 100;
                 playerHealth = 100;
@@ -1425,6 +1407,7 @@
                 isExploding = false;
                 isPlayerExploding = false;
                 explosionParticles = [];
+                hitExplosions = [];
                 frameCount = 0;
                 lastScoreIncrease = 0;
                 auraColor = null;
@@ -1469,7 +1452,6 @@
                     return;
                 }
                 if (gameOver) return;
-
                 if (frameCount % earthAnimationSpeed === 0) {
                     currentEarthFrame = (currentEarthFrame + 1) % earthFrameCount;
                 }
@@ -1481,23 +1463,22 @@
                 }
                 if (frameCount % heartAnimationSpeed === 0) {
                     currentHeartFrame = (currentHeartFrame + 1) % heartFrameCount;
-                }
+                } 
                  if (frameCount % redAuraAnimationSpeed === 0) {
                     currentRedAuraFrame = (currentRedAuraFrame + 1) % redAuraFrameCount;
                 }
                 if (frameCount % greenAuraAnimationSpeed === 0) {
                     currentGreenAuraFrame = (currentGreenAuraFrame + 1) % greenAuraFrameCount;
-                }
+                } 
                  if (frameCount % yellowAuraAnimationSpeed === 0) {
                     currentYellowAuraFrame = (currentYellowAuraFrame + 1) % yellowAuraFrameCount;
-                }
+                } 
                  if (frameCount % rayAuraAnimationSpeed === 0) {
                     currentRayAuraFrame = (currentRayAuraFrame + 1) % rayAuraFrameCount;
                 }
                 if (frameCount % wrenchAnimationSpeed === 0) {
                     currentWrenchFrame = (currentWrenchFrame + 1) % wrenchFrameCount;
-                }
-                
+                }                                
                 updatePlayer();
                 updateObjects();
                 checkCollisions();
@@ -1507,6 +1488,7 @@
                 drawPlanet();
                 drawPlayer();
                 drawImpactExplosions();
+                drawHitExplosions();
                 drawAsteroids();
                 drawRedBombs();
                 drawPowerUps();
@@ -1514,8 +1496,7 @@
                 drawPulse();
                 frameCount++;
                 animationFrameId = requestAnimationFrame(gameLoop);
-            }
-                                
+            }                                    
             // --- Game Logic Functions ---
             function distance(x1, y1, x2, y2) {
                 return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
@@ -1651,6 +1632,7 @@
                             if (score > lastScoreIncrease && score % 10 === 0) {
                                 asteroidSpeed += 0.1;
                             }
+                            hitExplosions.push({ x: asteroid.x, y: asteroid.y, radius: asteroid.radius, currentFrame: 0 });
                             beams.splice(i, 1);
                             asteroids.splice(j, 1);
                             beamRemoved = true;
@@ -1693,6 +1675,9 @@
                                         clearInterval(timerInterval);
                                         doubleBeamActive = false;
                                         powerupTimerDisplay.style.display = 'none';
+                                        if (auraColor === 'rayAura') {
+                                            auraColor = null;
+                                        }
                                     }
                                 }, 1000);
                             }
@@ -1738,6 +1723,9 @@
                                         clearInterval(timerInterval);
                                         doubleCoinsActive = false;
                                         coinMultiplierTimerDisplay.style.display = 'none';
+                                        if (auraColor === 'yellowAura') {
+                                            auraColor = null;
+                                        }
                                     }
                                 }, 1000);
                             }
@@ -1782,8 +1770,7 @@
                         }
                     }
                 }
-            }
-                                
+            }                                    
             // --- Drawing Functions ---
             function createStars() {
                 stars = [];
@@ -1797,17 +1784,14 @@
                     const scale = 0.5; // Size of the single nebula
                     const scaledWidth = nebulaImage.width * scale;
                     const scaledHeight = nebulaImage.height * scale;
-
                     // Update nebula position
                     nebula.x += nebula.speedX;
                     nebula.y += nebula.speedY;
-
                     // Wrap the nebula around the screen
                     if (nebula.x > canvas.width) nebula.x = -scaledWidth;
                     if (nebula.x < -scaledWidth) nebula.x = canvas.width;
                     if (nebula.y > canvas.height) nebula.y = -scaledHeight;
                     if (nebula.y < -scaledHeight) nebula.y = canvas.height;
-
                     // Draw the single nebula image
                     ctx.drawImage(nebulaImage, nebula.x, nebula.y, scaledWidth, scaledHeight);
                 }
@@ -1817,13 +1801,11 @@
                     // Move stars with the background for a parallax effect
                     star.x -= nebula.speedX * 1.5;
                     star.y -= nebula.speedY * 1.5;
-
                     // Wrap stars around the screen edges
                     if (star.x < 0) star.x = canvas.width;
                     if (star.y < 0) star.y = canvas.height;
                     if (star.x > canvas.width) star.x = 0;
                     if (star.y > canvas.height) star.y = 0;
-
 
                     ctx.beginPath();
                     ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
@@ -2016,46 +1998,46 @@
                     context.restore();
                 }
             }
-            function drawPlayer() {
-                 if (isPlayerExploding) return;
-                 if (auraColor) {
-                      ctx.save();
-                      ctx.translate(player.x, player.y);
-                      if (auraColor === 'redAura') {
-                          const currentFrameImage = redAuraFrames[currentRedAuraFrame];
-                          if (currentFrameImage && currentFrameImage.complete) {
-                              const auraSize = player.size * 4;
-                              ctx.drawImage(currentFrameImage, -auraSize / 2, -auraSize / 2, auraSize, auraSize);
-                          }
-                      } else if (auraColor === 'greenAura') {
-                          const currentFrameImage = greenAuraFrames[currentGreenAuraFrame];
-                          if (currentFrameImage && currentFrameImage.complete) {
-                              const auraSize = player.size * 4;
-                              ctx.drawImage(currentFrameImage, -auraSize / 2, -auraSize / 2, auraSize, auraSize);
-                          }
-                      } else if (auraColor === 'yellowAura') {
-                          const currentFrameImage = yellowAuraFrames[currentYellowAuraFrame];
-                          if (currentFrameImage && currentFrameImage.complete) {
-                              const auraSize = player.size * 4;
-                              ctx.drawImage(currentFrameImage, -auraSize / 2, -auraSize / 2, auraSize, auraSize);
-                          }
-                      } else if (auraColor === 'rayAura') {
-                          const currentFrameImage = rayAuraFrames[currentRayAuraFrame];
-                          if (currentFrameImage && currentFrameImage.complete) {
-                              const auraSize = player.size * 4;
-                              ctx.drawImage(currentFrameImage, -auraSize / 2, -auraSize / 2, auraSize, auraSize);
-                          }
-                      } else {
-                          const auraRadius = player.size * 2 + Math.sin(auraShimmer) * 5;
-                          ctx.beginPath();
-                          ctx.arc(0, 0, auraRadius, 0, Math.PI * 2);
-                          ctx.fillStyle = auraColor;
-                          ctx.shadowColor = auraColor;
-                          ctx.shadowBlur = 20;
-                          ctx.globalAlpha = 0.3;
-                          ctx.fill();
-                      }
-                      ctx.restore();
+            function drawPlayer() { 
+                 if (isPlayerExploding) return; 
+                 if (auraColor) { 
+                      ctx.save(); 
+                      ctx.translate(player.x, player.y); 
+                      if (auraColor === 'redAura') { 
+                          const currentFrameImage = redAuraFrames[currentRedAuraFrame]; 
+                          if (currentFrameImage && currentFrameImage.complete) { 
+                              const auraSize = player.size * 4; 
+                              ctx.drawImage(currentFrameImage, -auraSize / 2, -auraSize / 2, auraSize, auraSize); 
+                          } 
+                      } else if (auraColor === 'greenAura') { 
+                          const currentFrameImage = greenAuraFrames[currentGreenAuraFrame]; 
+                          if (currentFrameImage && currentFrameImage.complete) { 
+                              const auraSize = player.size * 4; 
+                              ctx.drawImage(currentFrameImage, -auraSize / 2, -auraSize / 2, auraSize, auraSize); 
+                          } 
+                      } else if (auraColor === 'yellowAura') { 
+                          const currentFrameImage = yellowAuraFrames[currentYellowAuraFrame]; 
+                          if (currentFrameImage && currentFrameImage.complete) { 
+                              const auraSize = player.size * 4; 
+                              ctx.drawImage(currentFrameImage, -auraSize / 2, -auraSize / 2, auraSize, auraSize); 
+                          } 
+                      } else if (auraColor === 'rayAura') { 
+                          const currentFrameImage = rayAuraFrames[currentRayAuraFrame]; 
+                          if (currentFrameImage && currentFrameImage.complete) { 
+                              const auraSize = player.size * 4; 
+                              ctx.drawImage(currentFrameImage, -auraSize / 2, -auraSize / 2, auraSize, auraSize); 
+                          } 
+                      } else { 
+                          const auraRadius = player.size * 2 + Math.sin(auraShimmer) * 5; 
+                          ctx.beginPath(); 
+                          ctx.arc(0, 0, auraRadius, 0, Math.PI * 2); 
+                          ctx.fillStyle = auraColor; 
+                          ctx.shadowColor = auraColor; 
+                          ctx.shadowBlur = 20; 
+                          ctx.globalAlpha = 0.3; 
+                          ctx.fill(); 
+                      } 
+                      ctx.restore(); 
                  }
                 ctx.save();
                 ctx.translate(player.x, player.y);
@@ -2066,16 +2048,16 @@
                 }
                 ctx.restore();
             }
-            function drawPlayerExplosion() {
-                 if (currentBlastFrame < blastFrameCount) {
-                      const currentFrameImage = blastFrames[currentBlastFrame];
-                      if (currentFrameImage && currentFrameImage.complete) {
-                          const blastSize = player.size * 6;
-                          ctx.drawImage(currentFrameImage, playerExplosionPos.x - blastSize / 2, playerExplosionPos.y - blastSize / 2, blastSize, blastSize);
-                      }
-                 } else {
-                      isPlayerExploding = false;
-                      endGame("Your ship was destroyed by an asteroid!");
+            function drawPlayerExplosion() { 
+                 if (currentBlastFrame < blastFrameCount) { 
+                      const currentFrameImage = blastFrames[currentBlastFrame]; 
+                      if (currentFrameImage && currentFrameImage.complete) { 
+                          const blastSize = player.size * 6; 
+                          ctx.drawImage(currentFrameImage, playerExplosionPos.x - blastSize / 2, playerExplosionPos.y - blastSize / 2, blastSize, blastSize); 
+                      } 
+                 } else { 
+                      isPlayerExploding = false; 
+                      endGame("Your ship was destroyed by an asteroid!"); 
                  }
             }
             function drawImpactExplosions() {
@@ -2088,12 +2070,28 @@
                             const size = player.size * 4;
                             ctx.drawImage(frameImage, explosion.x - size / 2, explosion.y - size / 2, size, size);
                         }
-                    }
-                    
+                    }                                        
                     explosion.currentFrame += (60 / 20) / 60 * impactFrameCount; // 20fps logic
-
                     if (explosion.currentFrame >= impactFrameCount) {
                         impactExplosions.splice(i, 1);
+                    }
+                }
+            }
+            function drawHitExplosions() {
+                for (let i = hitExplosions.length - 1; i >= 0; i--) {
+                    let explosion = hitExplosions[i];
+                    const frameIndex = Math.floor(explosion.currentFrame);
+                    if (frameIndex < hitFrameCount) {
+                        const frameImage = hitFrames[frameIndex];
+                        if (frameImage && frameImage.complete) {
+                            const size = explosion.radius * 4; // Make explosion size relative to asteroid size
+                            ctx.drawImage(frameImage, explosion.x - size / 2, explosion.y - size / 2, size, size);
+                        }
+                    }                                        
+                    // Advance frame to match 20 FPS (60fps / 20fps = 3)
+                    explosion.currentFrame += (60 / 20) / 60 * hitFrameCount;
+                    if (explosion.currentFrame >= hitFrameCount) {
+                        hitExplosions.splice(i, 1);
                     }
                 }
             }
@@ -2136,38 +2134,38 @@
                     }
                 });
             }
-            function drawRedBombs() {
-                 const currentFrameImage = redBombFrames[currentRedBombFrame];
-                 redBombs.forEach(bomb => {
-                      if (currentFrameImage && currentFrameImage.complete) {
-                          const radius = bomb.radius;
-                          ctx.save();
-                          ctx.shadowColor = '#ff0000';
-                          ctx.shadowBlur = 15;
-                          ctx.drawImage(currentFrameImage, bomb.x - radius, bomb.y - radius, radius * 2, radius * 2);
-                          ctx.restore();
-                      } else {
-                          // Fallback drawing if images fail to load
-                          const radius = bomb.radius;
-                          ctx.save();
-                          ctx.translate(bomb.x, bomb.y);
-                          ctx.beginPath();
-                          ctx.arc(0, 0, radius, Math.PI, 0);
-                          ctx.lineTo(radius, radius * 1.5);
-                          ctx.lineTo(-radius, radius * 1.5);
-                          ctx.fillStyle = bomb.color;
-                          ctx.shadowColor = bomb.color;
-                          ctx.shadowBlur = 15;
-                          ctx.fill();
-                          ctx.closePath();
-                          ctx.beginPath();
-                          ctx.moveTo(0, -radius);
-                          ctx.lineTo(0, -radius * 1.5);
-                          ctx.strokeStyle = '#666';
-                          ctx.lineWidth = 2;
-                          ctx.stroke();
-                          ctx.restore();
-                      }
+            function drawRedBombs() { 
+                 const currentFrameImage = redBombFrames[currentRedBombFrame]; 
+                 redBombs.forEach(bomb => { 
+                      if (currentFrameImage && currentFrameImage.complete) { 
+                          const radius = bomb.radius; 
+                          ctx.save(); 
+                          ctx.shadowColor = '#ff0000'; 
+                          ctx.shadowBlur = 15; 
+                          ctx.drawImage(currentFrameImage, bomb.x - radius, bomb.y - radius, radius * 2, radius * 2); 
+                          ctx.restore(); 
+                      } else { 
+                          // Fallback drawing if images fail to load 
+                          const radius = bomb.radius; 
+                          ctx.save(); 
+                          ctx.translate(bomb.x, bomb.y); 
+                          ctx.beginPath(); 
+                          ctx.arc(0, 0, radius, Math.PI, 0); 
+                          ctx.lineTo(radius, radius * 1.5); 
+                          ctx.lineTo(-radius, radius * 1.5); 
+                          ctx.fillStyle = bomb.color; 
+                          ctx.shadowColor = bomb.color; 
+                          ctx.shadowBlur = 15; 
+                          ctx.fill(); 
+                          ctx.closePath(); 
+                          ctx.beginPath(); 
+                          ctx.moveTo(0, -radius); 
+                          ctx.lineTo(0, -radius * 1.5); 
+                          ctx.strokeStyle = '#666'; 
+                          ctx.lineWidth = 2; 
+                          ctx.stroke(); 
+                          ctx.restore(); 
+                      } 
                  });
             }
             function drawPowerUps() {
@@ -2250,26 +2248,26 @@
                         ctx.restore();
                     }
                 });
-            }
-             function drawBeams() {
-                 beams.forEach(beam => {
-                      if (beam.image && beam.image.complete) {
-                          ctx.save();
-                          ctx.shadowColor = '#fff';
-                          ctx.shadowBlur = 10;
-                          ctx.drawImage(beam.image, beam.x - beam.size, beam.y - beam.size, beam.size * 2, beam.size * 2);
-                          ctx.restore();
-                      } else {
-                          // Fallback circle drawing
-                          ctx.beginPath();
-                          ctx.arc(beam.x, beam.y, beam.size, 0, Math.PI * 2);
-                          ctx.fillStyle = '#00ffcc';
-                          ctx.shadowColor = '#00ffcc';
-                          ctx.shadowBlur = 10;
-                          ctx.fill();
-                          ctx.closePath();
-                          ctx.shadowBlur = 0;
-                      }
+            } 
+             function drawBeams() { 
+                 beams.forEach(beam => { 
+                      if (beam.image && beam.image.complete) { 
+                          ctx.save(); 
+                          ctx.shadowColor = '#fff'; 
+                          ctx.shadowBlur = 10; 
+                          ctx.drawImage(beam.image, beam.x - beam.size, beam.y - beam.size, beam.size * 2, beam.size * 2); 
+                          ctx.restore(); 
+                      } else { 
+                          // Fallback circle drawing 
+                          ctx.beginPath(); 
+                          ctx.arc(beam.x, beam.y, beam.size, 0, Math.PI * 2); 
+                          ctx.fillStyle = '#00ffcc'; 
+                          ctx.shadowColor = '#00ffcc'; 
+                          ctx.shadowBlur = 10; 
+                          ctx.fill(); 
+                          ctx.closePath(); 
+                          ctx.shadowBlur = 0; 
+                      } 
                  });
             }
             function drawPulse() {
@@ -2355,8 +2353,7 @@
                 let vx = speed * Math.cos(angleToCenter);
                 let vy = speed * Math.sin(angleToCenter);
                 coinMultipliers.push({ x, y, radius, vx, vy, color: '#FFD700' });
-            }
-                                
+            }                                    
             // --- Shop Menu Functions ---
             function showShopMessage(title, message) {
                 const messageBox = document.createElement('div');
@@ -2408,7 +2405,6 @@
                     optionDiv.dataset.skinKey = key;
                     let statusText = '';
                     let buttonHtml = '';
-
                     if (isSelected) {
                         statusText = 'Equipped';
                     } else if (isUnlocked) {
@@ -2443,7 +2439,6 @@
                         } else if (action === 'unlock') {
                             const hasEnoughCoins = coins >= skin.price;
                             const hasHighScore = !skin.high_score_req || currentHighScore >= skin.high_score_req;
-
                             if (hasEnoughCoins && hasHighScore) {
                                 purchaseSound.triggerAttackRelease("C5", "8n");
                                 coins -= skin.price;
@@ -2502,8 +2497,7 @@
                 const coinMultiplierUpgradeDiv = document.createElement('div');
                 coinMultiplierUpgradeDiv.className = `upgrade-option ${!canUpgradeCoinMultiplier ? 'locked' : ''}`;
                 coinMultiplierUpgradeDiv.innerHTML = `<div class="skin-option-content"><canvas id="powerup-canvas-coinMultiplier" width="60" height="60"></canvas><h3>${coinMultiplierUpgradeInfo.name} Upgrade</h3></div><p>Current Level: ${coinMultiplierUpgradeLevel} / ${maxCoinMultiplierLevel}</p><p>Duration: ${currentCoinMultiplierDuration}s</p><span class="unlock-cost">${isMaxCoinMultiplier ? 'Max Level' : `Cost: ${coinMultiplierUpgradeCost} Coins`}</span><button class="purchase-button" id="coin-multiplier-upgrade-btn" ${!canUpgradeCoinMultiplier ? 'disabled' : ''}>Upgrade</button>`;
-                powerupsOptionsContainer.appendChild(coinMultiplierUpgradeDiv);
-                                        
+                powerupsOptionsContainer.appendChild(coinMultiplierUpgradeDiv);                                                
                 document.getElementById('health-upgrade-btn').addEventListener('click', () => {
                     if (canUpgradeHealth) {
                         purchaseSound.triggerAttackRelease("C5", "8n");
@@ -2604,8 +2598,7 @@
                     showScreen('game');
                     gameLoop();
                 }
-            }
-                                
+            }                                    
             // --- Event Listeners ---
             startPlayBtn.addEventListener('click', startIntro);
             startGameBtnInMenu.addEventListener('click', newGame);
