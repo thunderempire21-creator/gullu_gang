@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Avenger: Gullu Games</title>
+    <!-- Tone.js for sound effects and music -->
     <script src="https://cdn.jsdelivr.net/npm/tone@14.7.58/build/Tone.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
@@ -481,12 +482,14 @@
         <div class="loader"></div>
     </div>
     <div class="game-container">
+        <!-- Updated Start Screen -->
         <div id="start-screen">
              <div id="start-screen-content">
-                  <h1>Avenger: Gullu Games</h1>
-                  <button id="start-play-btn" class="button">Play</button>
+                 <h1>Avenger: Gullu Games</h1>
+                 <button id="start-play-btn" class="button">Play</button>
              </div>
         </div>
+        <!-- Game UI Elements -->
         <div id="game-info-container">
             <div id="game-info">Score: <span id="score">0</span></div>
             <div id="player-health-info">Player Health: <span id="player-health">100</span>%</div>
@@ -499,6 +502,7 @@
         <div class="game-controls-container">
             <button id="home-button" class="button">Home</button>
         </div>
+        <!-- UI Overlays -->
         <div id="intro-overlay" class="ui-overlay">
             <canvas id="intro-canvas"></canvas>
             <div style="position: relative; z-index: 10;">
@@ -542,14 +546,17 @@
                     <button class="tab-button" id="powerups-tab">Power-ups</button>
                 </div>
                 <div id="skins-options-container">
-                    </div>
+                    <!-- Skin options will be injected here -->
+                </div>
                 <div id="powerups-options-container" style="display:none;">
-                    </div>
+                    <!-- Power-up options will be injected here -->
+                </div>
                 <div class="button-group shop-buttons">
                     <button class="button" id="shop-back-btn">Back</button>
                 </div>
             </div>
         </div>
+        <!-- New Instructions Overlay -->
         <div id="instructions-overlay" class="ui-overlay">
             <div id="instructions-menu" class="message-box instructions">
                 <h2 class="shop-header">Instructions</h2>
@@ -689,7 +696,7 @@
             let lastLavaSoundTime = 0;
             const lavaSoundCooldown = 0.5;
             let isExploding = false;
-             let isPlayerExploding = false;
+            let isPlayerExploding = false;
             let playerExplosionPos = { x: 0, y: 0 };
             // --- Earth Animation Variables ---
             let earthFrames = [];
@@ -747,6 +754,15 @@
             // --- Nebula Background Variables ---
             const nebulaImage = new Image();
             let nebula = { x: 0, y: 0, speedX: 0.1, speedY: 0.05 };
+            // --- Impact Animation Variables ---
+            let impactFrames = [];
+            const impactFrameCount = 64;
+            const impactAnimationSpeed = 3; // 60fps / 20fps = 3
+            let impactExplosions = [];
+            // --- Earth Explosion Animation Variables (FIXED) ---
+            let earthExplosionFrames = [];
+            const earthExplosionFrameCount = 16;
+            let currentEarthExplosionFrame = 0;
             let player = {
                 x: 0,
                 y: 0,
@@ -803,58 +819,58 @@
             let healthUpgradeLevel = parseInt(localStorage.getItem('healthUpgradeLevel') || 0);
             let doubleBeamUpgradeLevel = parseInt(localStorage.getItem('doubleBeamUpgradeLevel') || 0);
             let coinMultiplierUpgradeLevel = parseInt(localStorage.getItem('coinMultiplierUpgradeLevel') || 0);
-                        
+                                
             // --- Asset Loading ---
             const assetsToLoad = [];
             const beamImages = {};
 
-            nebulaImage.src = 'images/nebula3.png';
+            nebulaImage.src = ' images/nebula3.png';
             nebulaImage.onerror = () => nebulaImage.src = 'https://placehold.co/800x800/1a1a33/ffffff?text=Nebula+Not+Found';
             assetsToLoad.push(nebulaImage);
 
             const ironManImage = new Image();
-            ironManImage.src = 'images/Ironman.png';
+            ironManImage.src = ' images/Ironman.png';
             ironManImage.onerror = () => ironManImage.src = 'https://placehold.co/100x100/ff0000/ffffff?text=IronMan';
             assetsToLoad.push(ironManImage);
-                        
+                                
             const greenHulkImage = new Image();
-            greenHulkImage.src = 'images/hulk.png';
+            greenHulkImage.src = ' images/hulk.png';
             greenHulkImage.onerror = () => greenHulkImage.src = 'https://placehold.co/100x100/00ff00/ffffff?text=Hulk';
             assetsToLoad.push(greenHulkImage);
 
             const blackWidowImage = new Image();
-            blackWidowImage.src = 'images/widow.png';
+            blackWidowImage.src = ' images/widow.png';
             blackWidowImage.onerror = () => blackWidowImage.src = 'https://placehold.co/100x100/000000/ffffff?text=Widow';
             assetsToLoad.push(blackWidowImage);
 
             const captainAmericaImage = new Image();
-            captainAmericaImage.src = 'images/captain.png';
+            captainAmericaImage.src = ' images/captain.png';
             captainAmericaImage.onerror = () => captainAmericaImage.src = 'https://placehold.co/100x100/0000ff/ffffff?text=Cap';
             assetsToLoad.push(captainAmericaImage);
-                        
+                                
             const pantherGulluImage = new Image();
-            pantherGulluImage.src = 'images/panther.png';
+            pantherGulluImage.src = ' images/panther.png';
             pantherGulluImage.onerror = () => pantherGulluImage.src = 'https://placehold.co/100x100/8A2BE2/ffffff?text=Panther';
             assetsToLoad.push(pantherGulluImage);
 
             const spidyGulluImage = new Image();
-            spidyGulluImage.src = 'images/spidy.png';
+            spidyGulluImage.src = ' images/spidy.png';
             spidyGulluImage.onerror = () => spidyGulluImage.src = 'https://placehold.co/100x100/FF0000/ffffff?text=Spidy';
             assetsToLoad.push(spidyGulluImage);
 
             // Beam Images
             beamImages['ironMan'] = new Image();
-            beamImages['ironMan'].src = 'images/beam1.png';
+            beamImages['ironMan'].src = ' images/beam1.png';
             beamImages['greenHulk'] = new Image();
-            beamImages['greenHulk'].src = 'images/beam2.png';
+            beamImages['greenHulk'].src = ' images/beam2.png';
             beamImages['blackWidow'] = new Image();
-            beamImages['blackWidow'].src = 'images/beam3.png';
+            beamImages['blackWidow'].src = ' images/beam3.png';
             beamImages['captainAmerica'] = new Image();
-            beamImages['captainAmerica'].src = 'images/beam4.png';
+            beamImages['captainAmerica'].src = ' images/beam4.png';
             beamImages['pantherGullu'] = new Image();
-            beamImages['pantherGullu'].src = 'images/beam5.png';
+            beamImages['pantherGullu'].src = ' images/beam5.png';
             beamImages['spidyGullu'] = new Image();
-            beamImages['spidyGullu'].src = 'images/beam6.png';
+            beamImages['spidyGullu'].src = ' images/beam6.png';
 
             for (const key in beamImages) {
                 beamImages[key].onerror = () => beamImages[key].src = `https://placehold.co/20x20/ffffff/000000?text=B`;
@@ -865,22 +881,22 @@
             const crackImageSmall = new Image();
             const crackImageMedium = new Image();
             const crackImageLarge = new Image();
-            crackImageSmall.src = 'images/crack3.png';
+            crackImageSmall.src = ' images/crack3.png';
             crackImageSmall.onerror = () => crackImageSmall.src = 'https://placehold.co/50x50/ffffff/000000?text=Crack';
-            crackImageMedium.src = 'images/crack6.png';
+            crackImageMedium.src = ' images/crack6.png';
             crackImageMedium.onerror = () => crackImageMedium.src = 'https://placehold.co/100x100/ffffff/000000?text=Crack';
-            crackImageLarge.src = 'images/crack5.png';
+            crackImageLarge.src = ' images/crack5.png';
             crackImageLarge.onerror = () => crackImageLarge.src = 'https://placehold.co/150x150/ffffff/000000?text=Crack';
             assetsToLoad.push(crackImageSmall, crackImageMedium, crackImageLarge);
-                        
+                                
             // Earth Animation Frames
             const earthFrameURLs = [
-                'images/frame1.png',
-                'images/frame2.png',
-                'images/frame3.png',
-                'images/frame4.png',
-                'images/frame5.png',
-                'images/frame6.png'
+                ' images/frame1.png',
+                ' images/frame2.png',
+                ' images/frame3.png',
+                ' images/frame4.png',
+                ' images/frame5.png',
+                ' images/frame6.png'
             ];
             for (let i = 0; i < earthFrameCount; i++) {
                 const frameImage = new Image();
@@ -894,22 +910,22 @@
             const smallAsteroidImage = new Image();
             const mediumAsteroidImage = new Image();
             const largeAsteroidImage = new Image();
-            smallAsteroidImage.src = 'images/small.png';
+            smallAsteroidImage.src = ' images/small.png';
             smallAsteroidImage.onerror = () => smallAsteroidImage.src = 'https://placehold.co/30x30/964B00/ffffff?text=S';
-            mediumAsteroidImage.src = 'images/medium.png';
+            mediumAsteroidImage.src = ' images/medium.png';
             mediumAsteroidImage.onerror = () => mediumAsteroidImage.src = 'https://placehold.co/50x50/964B00/ffffff?text=M';
-            largeAsteroidImage.src = 'images/large.png';
+            largeAsteroidImage.src = ' images/large.png';
             largeAsteroidImage.onerror = () => largeAsteroidImage.src = 'https://placehold.co/70x70/964B00/ffffff?text=L';
             assetsToLoad.push(smallAsteroidImage, mediumAsteroidImage, largeAsteroidImage);
-                        
+                                
             // Coin animation frames
             const coinFrameURLs = [
-                'images/coin1.png',
-                'images/coin2.png',
-                'images/coin3.png',
-                'images/coin4.png',
-                'images/coin5.png',
-                'images/coin6.png'
+                ' images/coin1.png',
+                ' images/coin2.png',
+                ' images/coin3.png',
+                ' images/coin4.png',
+                ' images/coin5.png',
+                ' images/coin6.png'
             ];
             for (let i = 0; i < coinFrameCount; i++) {
                 const frameImage = new Image();
@@ -921,11 +937,11 @@
 
             // Red Bomb animation frames
             const redBombFrameURLs = [
-                'images/fatman1.png',
-                'images/fatman2.png',
-                'images/fatman3.png',
-                'images/fatman4.png',
-                'images/fatman5.png'
+                ' images/fatman1.png',
+                ' images/fatman2.png',
+                ' images/fatman3.png',
+                ' images/fatman4.png',
+                ' images/fatman5.png'
             ];
             for (let i = 0; i < redBombFrameCount; i++) {
                 const frameImage = new Image();
@@ -937,12 +953,12 @@
 
             // Health Pack animation frames
             const heartFrameURLs = [
-                'images/heart1.png',
-                'images/heart2.png',
-                'images/heart3.png',
-                'images/heart4.png',
-                'images/heart5.png',
-                'images/heart6.png'
+                ' images/heart1.png',
+                ' images/heart2.png',
+                ' images/heart3.png',
+                ' images/heart4.png',
+                ' images/heart5.png',
+                ' images/heart6.png'
             ];
             for (let i = 0; i < heartFrameCount; i++) {
                 const frameImage = new Image();
@@ -954,9 +970,9 @@
 
              // Red Aura animation frames
             const redAuraFrameURLs = [
-                'images/red1.png', 'images/red2.png', 'images/red3.png', 'images/red4.png', 'images/red5.png',
-                'images/red6.png', 'images/red7.png', 'images/red8.png', 'images/red9.png', 'images/red10.png',
-                'images/red11.png', 'images/red12.png', 'images/red13.png'
+                ' images/red1.png', ' images/red2.png', ' images/red3.png', ' images/red4.png', ' images/red5.png',
+                ' images/red6.png', ' images/red7.png', ' images/red8.png', ' images/red9.png', ' images/red10.png',
+                ' images/red11.png', ' images/red12.png', ' images/red13.png'
             ];
             for (let i = 0; i < redAuraFrameCount; i++) {
                 const frameImage = new Image();
@@ -968,9 +984,9 @@
 
              // Green Aura animation frames
             const greenAuraFrameURLs = [
-                 'images/green1.png', 'images/green2.png', 'images/green3.png', 'images/green4.png', 'images/green5.png',
-                 'images/green6.png', 'images/green7.png', 'images/green8.png', 'images/green9.png', 'images/green10.png',
-                 'images/green11.png', 'images/green12.png', 'images/green13.png'
+                 ' images/green1.png', ' images/green2.png', ' images/green3.png', ' images/green4.png', ' images/green5.png',
+                 ' images/green6.png', ' images/green7.png', ' images/green8.png', ' images/green9.png', ' images/green10.png',
+                 ' images/green11.png', ' images/green12.png', ' images/green13.png'
             ];
             for (let i = 0; i < greenAuraFrameCount; i++) {
                  const frameImage = new Image();
@@ -981,9 +997,9 @@
             }
              // Yellow Aura animation frames
             const yellowAuraFrameURLs = [
-                 'images/yellow1.png', 'images/yellow2.png', 'images/yellow3.png', 'images/yellow4.png', 'images/yellow5.png',
-                 'images/yellow6.png', 'images/yellow7.png', 'images/yellow8.png', 'images/yellow9.png', 'images/yellow10.png',
-                 'images/yellow11.png', 'images/yellow12.png'
+                 ' images/yellow1.png', ' images/yellow2.png', ' images/yellow3.png', ' images/yellow4.png', ' images/yellow5.png',
+                 ' images/yellow6.png', ' images/yellow7.png', ' images/yellow8.png', ' images/yellow9.png', ' images/yellow10.png',
+                 ' images/yellow11.png', ' images/yellow12.png'
             ];
             for (let i = 0; i < yellowAuraFrameCount; i++) {
                  const frameImage = new Image();
@@ -995,7 +1011,7 @@
             
              // Ray Aura animation frames
             const rayAuraFrameURLs = [
-                'images/ray1.png', 'images/ray2.png', 'images/ray3.png', 'images/ray4.png', 'images/ray5.png'
+                ' images/ray1.png', ' images/ray2.png', ' images/ray3.png', ' images/ray4.png', ' images/ray5.png'
             ];
             for (let i = 0; i < rayAuraFrameCount; i++) {
                 const frameImage = new Image();
@@ -1007,11 +1023,11 @@
 
              // Wrench animation frames
             const wrenchFrameURLs = [
-                'images/wrench1.png',
-                'images/wrench2.png',
-                'images/wrench3.png',
-                'images/wrench4.png',
-                'images/wrench5.png'
+                ' images/wrench1.png',
+                ' images/wrench2.png',
+                ' images/wrench3.png',
+                ' images/wrench4.png',
+                ' images/wrench5.png'
             ];
             for (let i = 0; i < wrenchFrameCount; i++) {
                 const frameImage = new Image();
@@ -1023,15 +1039,33 @@
 
              // Blast animation frames
             const blastFrameURLs = [
-                'images/blast1.png', 'images/blast2.png', 'images/blast3.png', 'images/blast4.png', 'images/blast5.png',
-                'images/blast6.png', 'images/blast7.png', 'images/blast8.png', 'images/blast9.png', 'images/blast10.png',
-                'images/blast11.png', 'images/blast12.png', 'images/blast13.png', 'images/blast14.png', 'images/blast15.png'
+                ' images/blast1.png', ' images/blast2.png', ' images/blast3.png', ' images/blast4.png', ' images/blast5.png',
+                ' images/blast6.png', ' images/blast7.png', ' images/blast8.png', ' images/blast9.png', ' images/blast10.png',
+                ' images/blast11.png', ' images/blast12.png', ' images/blast13.png', ' images/blast14.png', ' images/blast15.png'
             ];
             for (let i = 0; i < blastFrameCount; i++) {
                 const frameImage = new Image();
                 frameImage.src = blastFrameURLs[i];
                 frameImage.onerror = () => frameImage.src = `https://placehold.co/100x100/ff9900/ffffff?text=Boom${i+1}`;
                 blastFrames.push(frameImage);
+                assetsToLoad.push(frameImage);
+            }
+
+            // Impact animation frames
+            for (let i = 1; i <= impactFrameCount; i++) {
+                const frameImage = new Image();
+                frameImage.src = ` images/impact${i}.png`;
+                frameImage.onerror = () => frameImage.src = `https://placehold.co/100x100/ff9900/ffffff?text=Impact${i}`;
+                impactFrames.push(frameImage);
+                assetsToLoad.push(frameImage);
+            }
+            
+            // --- Earth Explosion animation frames (FIXED) ---
+            for (let i = 1; i <= earthExplosionFrameCount; i++) {
+                const frameImage = new Image();
+                frameImage.src = ` images/explosion${i}.png`;
+                frameImage.onerror = () => frameImage.src = `https://placehold.co/100x100/ff5733/ffffff?text=Boom${i}`;
+                earthExplosionFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
 
@@ -1060,7 +1094,7 @@
                     };
                 }
             });
-                        
+                                
             // --- TTS Functions ---
             function base64ToArrayBuffer(base64) {
                 const binaryString = window.atob(base64);
@@ -1146,7 +1180,7 @@
                     console.error('Error in TTS API call:', error);
                 }
             }
-                        
+                                
             // --- Tone.js Sound Effects ---
             const beamSynth = new Tone.Synth({ oscillator: { type: "triangle" }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.05, release: 0.1 }, volume: -10 }).toDestination();
             const crashNoise = new Tone.NoiseSynth({ noise: { type: "brown" }, envelope: { attack: 0.005, decay: 0.1, sustain: 0, release: 0.1 } }).toDestination();
@@ -1165,7 +1199,7 @@
             const webSound = new Tone.NoiseSynth({ noise: { type: "pink" }, envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.1 } }).toDestination();
             const mainMenuAmbient = new Tone.PolySynth(Tone.Synth, { oscillator: { type: "triangle" }, envelope: { attack: 0.05, decay: 0.5, sustain: 0.1, release: 1 }, volume: -10 }).toDestination();
             const purchaseSound = new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.05, decay: 0.2, sustain: 0, release: 0.3 }, volume: -10 }).toDestination();
-                        
+                                
             function playIntroMusic() {
                 introSpaceSound.triggerAttackRelease(["C3", "G3", "D4"], "4s");
             }
@@ -1271,7 +1305,7 @@
                 }
                 showGameOverMenu();
             }
-                        
+                                
             // --- Intro Sequence ---
             let introFrameId = null;
             let introActive = false;
@@ -1421,13 +1455,21 @@
                     animationFrameId = requestAnimationFrame(gameLoop);
                     return;
                 }
-                if (gameOver) return;
-
                 if (isExploding) {
-                    drawExplosion();
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    drawNebula();
+                    drawStars();
+                    drawEarthExplosion();
+                    // Animation logic for 10 FPS (60 / 10 = 6)
+                    if (frameCount % 6 === 0) {
+                        currentEarthExplosionFrame++;
+                    }
+                    frameCount++;
                     animationFrameId = requestAnimationFrame(gameLoop);
                     return;
                 }
+                if (gameOver) return;
+
                 if (frameCount % earthAnimationSpeed === 0) {
                     currentEarthFrame = (currentEarthFrame + 1) % earthFrameCount;
                 }
@@ -1464,6 +1506,7 @@
                 drawStars();
                 drawPlanet();
                 drawPlayer();
+                drawImpactExplosions();
                 drawAsteroids();
                 drawRedBombs();
                 drawPowerUps();
@@ -1472,7 +1515,7 @@
                 frameCount++;
                 animationFrameId = requestAnimationFrame(gameLoop);
             }
-                        
+                                
             // --- Game Logic Functions ---
             function distance(x1, y1, x2, y2) {
                 return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
@@ -1557,7 +1600,9 @@
                         addEarthCrack(asteroid, crackType);
                         asteroids.splice(i, 1);
                         if (earthHealth <= 0 && !isExploding) {
-                           isExploding = true;
+                            isExploding = true;
+                            currentEarthExplosionFrame = 0; // Start animation from frame 0
+                            explosionNoise.triggerAttackRelease("1s");
                         }
                     } else if (asteroid.x < -20 || asteroid.x > canvas.width + 20 || asteroid.y < -20 || asteroid.y > canvas.height + 20) {
                         asteroids.splice(i, 1);
@@ -1710,6 +1755,7 @@
                             crashNoise.triggerAttackRelease("32n");
                             lastCrashTime = Tone.now();
                         }
+                        impactExplosions.push({ x: player.x, y: player.y, currentFrame: 0 });
                         const damage = getAsteroidDamage(asteroid);
                         playerHealth -= damage.player;
                         if (playerHealth < 0) playerHealth = 0;
@@ -1737,7 +1783,7 @@
                     }
                 }
             }
-                        
+                                
             // --- Drawing Functions ---
             function createStars() {
                 stars = [];
@@ -1828,30 +1874,17 @@
                     }
                 }
             }
-            function drawExplosion() {
-                if (explosionParticles.length === 0 && isExploding) {
-                    explosionNoise.triggerAttackRelease("1s");
-                    for (let i = 0; i < 500; i++) {
-                        const angle = Math.random() * Math.PI * 2;
-                        const speed = Math.random() * 10 + 2;
-                        explosionParticles.push({ x: planet.x, y: planet.y, vx: speed * Math.cos(angle), vy: speed * Math.sin(angle), radius: Math.random() * 3 + 1, color: `hsl(${Math.random() * 30 + 10}, 100%, 50%)`, alpha: 1 });
+            function drawEarthExplosion() {
+                const frameIndex = Math.floor(currentEarthExplosionFrame);
+                if (frameIndex < earthExplosionFrameCount) {
+                    const frameImage = earthExplosionFrames[frameIndex];
+                    if (frameImage && frameImage.complete) {
+                        const explosionSize = planet.radius * 6; // Make it large
+                        ctx.drawImage(frameImage, planet.x - explosionSize / 2, planet.y - explosionSize / 2, explosionSize, explosionSize);
                     }
-                }
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                drawStars();
-                updateExplosionParticles();
-                explosionParticles.forEach(p => {
-                    ctx.globalAlpha = p.alpha;
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                    ctx.fillStyle = p.color;
-                    ctx.fill();
-                    ctx.closePath();
-                });
-                ctx.globalAlpha = 1;
-                if (isExploding && explosionParticles.length === 0) {
+                } else {
                     isExploding = false;
-                    endGame("The Earth's shield was destroyed!");
+                    endGame("The Earth was destroyed!");
                 }
             }
             function drawPlanet() {
@@ -2044,6 +2077,25 @@
                       isPlayerExploding = false;
                       endGame("Your ship was destroyed by an asteroid!");
                  }
+            }
+            function drawImpactExplosions() {
+                for (let i = impactExplosions.length - 1; i >= 0; i--) {
+                    let explosion = impactExplosions[i];
+                    const frameIndex = Math.floor(explosion.currentFrame);
+                    if (frameIndex < impactFrameCount) {
+                        const frameImage = impactFrames[frameIndex];
+                        if (frameImage && frameImage.complete) {
+                            const size = player.size * 4;
+                            ctx.drawImage(frameImage, explosion.x - size / 2, explosion.y - size / 2, size, size);
+                        }
+                    }
+                    
+                    explosion.currentFrame += (60 / 20) / 60 * impactFrameCount; // 20fps logic
+
+                    if (explosion.currentFrame >= impactFrameCount) {
+                        impactExplosions.splice(i, 1);
+                    }
+                }
             }
             function drawAsteroids() {
                 asteroids.forEach(asteroid => {
@@ -2304,7 +2356,7 @@
                 let vy = speed * Math.sin(angleToCenter);
                 coinMultipliers.push({ x, y, radius, vx, vy, color: '#FFD700' });
             }
-                        
+                                
             // --- Shop Menu Functions ---
             function showShopMessage(title, message) {
                 const messageBox = document.createElement('div');
@@ -2451,7 +2503,7 @@
                 coinMultiplierUpgradeDiv.className = `upgrade-option ${!canUpgradeCoinMultiplier ? 'locked' : ''}`;
                 coinMultiplierUpgradeDiv.innerHTML = `<div class="skin-option-content"><canvas id="powerup-canvas-coinMultiplier" width="60" height="60"></canvas><h3>${coinMultiplierUpgradeInfo.name} Upgrade</h3></div><p>Current Level: ${coinMultiplierUpgradeLevel} / ${maxCoinMultiplierLevel}</p><p>Duration: ${currentCoinMultiplierDuration}s</p><span class="unlock-cost">${isMaxCoinMultiplier ? 'Max Level' : `Cost: ${coinMultiplierUpgradeCost} Coins`}</span><button class="purchase-button" id="coin-multiplier-upgrade-btn" ${!canUpgradeCoinMultiplier ? 'disabled' : ''}>Upgrade</button>`;
                 powerupsOptionsContainer.appendChild(coinMultiplierUpgradeDiv);
-                                
+                                        
                 document.getElementById('health-upgrade-btn').addEventListener('click', () => {
                     if (canUpgradeHealth) {
                         purchaseSound.triggerAttackRelease("C5", "8n");
@@ -2553,7 +2605,7 @@
                     gameLoop();
                 }
             }
-                        
+                                
             // --- Event Listeners ---
             startPlayBtn.addEventListener('click', startIntro);
             startGameBtnInMenu.addEventListener('click', newGame);
