@@ -17,7 +17,7 @@
             align-items: center;
             height: 100vh;
             background-color: #0d0d1a;
-            /* --- MODIFIED: Added background image --- */
+            /* --- MODIFIED: Added background image path --- */
             background-image: url('images/Wow.png');
             background-size: cover;
             background-position: center;
@@ -79,7 +79,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            /* --- MODIFIED: Changed background to use start.png --- */
+            /* --- MODIFIED: Changed background path to use start.png --- */
             background-image: url('images/start.png');
             background-color: #1b2735; /* Fallback color */
             background-size: cover;
@@ -868,9 +868,12 @@
             introMusic.loop = true;
             const mainMenuMusicFile = new Audio('music/main.mp3');
             mainMenuMusicFile.loop = true;
-            // --- MODIFIED: Added gameover.mp3 audio file ---
             const gameOverMusic = new Audio('music/gameover.mp3');
             gameOverMusic.loop = true;
+            const gameMusic = new Audio('music/game.mp3');
+            gameMusic.loop = true;
+            gameMusic.volume = 0.3; // Set low volume
+            const waveSoundEffect = new Audio('music/wave.mp3');
 
             const asteroidTailImage = new Image();
             asteroidTailImage.src = 'images/tail.png';
@@ -1107,7 +1110,7 @@
                 });
             });
 
-            const audioPromises = [introMusic, mainMenuMusicFile, gameOverMusic].map(audio => {
+            const audioPromises = [introMusic, mainMenuMusicFile, gameOverMusic, gameMusic, waveSoundEffect].map(audio => {
                 return new Promise((resolve) => {
                     audio.addEventListener('canplaythrough', resolve, { once: true });
                     audio.onerror = () => {
@@ -1246,7 +1249,6 @@
                 mainMenuMusicFile.currentTime = 0;
                 mainMenuMusicFile.play().catch(e => console.error("Main menu audio play failed.", e));
             }
-            // --- MODIFIED: Added function for game over music ---
             function playGameOverMusic() {
                 gameOverMusic.currentTime = 0;
                 gameOverMusic.play().catch(e => console.error("Game over audio play failed.", e));
@@ -1257,6 +1259,10 @@
                 mainMenuMusicFile.currentTime = 0;
                 gameOverMusic.pause();
                 gameOverMusic.currentTime = 0;
+                gameMusic.pause();
+                gameMusic.currentTime = 0;
+                waveSoundEffect.pause();
+                waveSoundEffect.currentTime = 0;
             }
 
             // --- UI Management ---
@@ -1305,7 +1311,6 @@
                 previousScreen = 'gameOver';
                 showScreen('gameOver');
                 stopAllMusic();
-                // --- MODIFIED: Play game over music ---
                 playGameOverMusic();
             }
 
@@ -1319,6 +1324,7 @@
                 gamePaused = false;
                 showScreen('game');
                 stopAllMusic();
+                gameMusic.play();
                 gameLoop();
             }
 
@@ -1385,8 +1391,6 @@
                             introCtx.closePath();
                             introCtx.stroke();
                         }
-                        // --- MODIFIED: Removed web sound ---
-                        // webSound.triggerAttackRelease("16n");
                         introFrameId = requestAnimationFrame(animateWeb);
                     } else if (!textVisible) {
                         presentedBy.style.opacity = 1;
@@ -1437,6 +1441,7 @@
                 buttonClickSynth.triggerAttackRelease("C5", "8n");
                 showScreen('game');
                 stopAllMusic();
+                gameMusic.play();
                 isGameStarted = true;
                 asteroidSpeed = 1.2;
                 player.speed = 0.02;
@@ -1728,6 +1733,12 @@
                             auraColor = 'redAura';
                             auraTimer = 5 * 60;
                             pulseSynth.triggerAttackRelease("C1", "2n");
+                            
+                            // --- MODIFIED: Wave sound logic ---
+                            gameMusic.pause();
+                            waveSoundEffect.currentTime = 0;
+                            waveSoundEffect.play();
+
                             beamRemoved = true;
                             break;
                         }
@@ -2754,6 +2765,12 @@
                 powerupsTabBtn.classList.add('active');
                 skinsTabBtn.classList.remove('active');
                 generatePowerupOptions();
+            });
+
+            waveSoundEffect.addEventListener('ended', () => {
+                if (isGameStarted && !gameOver && !gamePaused) {
+                    gameMusic.play();
+                }
             });
 
             let isQKeyPressed = false;
