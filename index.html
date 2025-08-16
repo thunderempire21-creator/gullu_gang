@@ -17,7 +17,7 @@
             align-items: center;
             height: 100vh;
             background-color: #0d0d1a;
-            /* --- MODIFIED: Added background image with new path --- */
+            /* --- MODIFIED: Added background image --- */
             background-image: url('images/Wow.png');
             background-size: cover;
             background-position: center;
@@ -79,7 +79,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            /* --- MODIFIED: Changed background to use start.png with new path --- */
+            /* --- MODIFIED: Changed background to use start.png --- */
             background-image: url('images/start.png');
             background-color: #1b2735; /* Fallback color */
             background-size: cover;
@@ -864,6 +864,12 @@
             // --- Asset Loading ---
             const assetsToLoad = [];
             const beamImages = {};
+            const introMusic = new Audio('music/intro.mp3');
+            introMusic.loop = true;
+            // --- MODIFIED: Added main.mp3 audio file ---
+            const mainMenuMusicFile = new Audio('music/main.mp3');
+            mainMenuMusicFile.loop = true;
+
             const asteroidTailImage = new Image();
             asteroidTailImage.src = 'images/tail.png';
             asteroidTailImage.onerror = () => asteroidTailImage.src = 'https://placehold.co/60x30/ff8c00/ffffff?text=Tail';
@@ -941,19 +947,19 @@
             crackImageLarge.onerror = () => crackImageLarge.src = 'https://placehold.co/150x150/ffffff/000000?text=Crack';
             assetsToLoad.push(crackImageSmall, crackImageMedium, crackImageLarge);
 
-            const earthFrameURLs = ['frame1.png', 'frame2.png', 'frame3.png', 'frame4.png', 'frame5.png', 'frame6.png'];
+            const earthFrameURLs = ['images/frame1.png', 'images/frame2.png', 'images/frame3.png', 'images/frame4.png', 'images/frame5.png', 'images/frame6.png'];
             for (let i = 0; i < earthFrameCount; i++) {
                 const frameImage = new Image();
-                frameImage.src = 'images/' + earthFrameURLs[i];
+                frameImage.src = earthFrameURLs[i];
                 frameImage.onerror = () => frameImage.src = `https://placehold.co/100x100/3498db/ffffff?text=E${i+1}`;
                 earthFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
 
-            const lavaFrameURLs = ['star1.png', 'star2.png', 'star3.png', 'star4.png'];
+            const lavaFrameURLs = ['images/star1.png', 'images/star2.png', 'images/star3.png', 'images/star4.png'];
             for (let i = 0; i < lavaFrameCount; i++) {
                 const frameImage = new Image();
-                frameImage.src = 'images/' + lavaFrameURLs[i];
+                frameImage.src = lavaFrameURLs[i];
                 frameImage.onerror = () => frameImage.src = `https://placehold.co/50x50/ff6600/ffffff?text=Lava${i+1}`;
                 lavaFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
@@ -979,82 +985,82 @@
             largeAsteroidImage.onerror = () => largeAsteroidImage.src = 'https://placehold.co/70x70/964B00/ffffff?text=L';
             assetsToLoad.push(smallAsteroidImage, mediumAsteroidImage, largeAsteroidImage);
 
-            const coinFrameURLs = ['coin1.png', 'coin2.png', 'coin3.png', 'coin4.png', 'coin5.png', 'coin6.png'];
+            const coinFrameURLs = ['images/coin1.png', 'images/coin2.png', 'images/coin3.png', 'images/coin4.png', 'images/coin5.png', 'images/coin6.png'];
             for (let i = 0; i < coinFrameCount; i++) {
                 const frameImage = new Image();
-                frameImage.src = 'images/' + coinFrameURLs[i];
+                frameImage.src = coinFrameURLs[i];
                 frameImage.onerror = () => frameImage.src = `https://placehold.co/50x50/ffd700/000000?text=C${i+1}`;
                 coinFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
 
-            const redBombFrameURLs = ['fatman1.png', 'fatman2.png', 'fatman3.png', 'fatman4.png', 'fatman5.png'];
+            const redBombFrameURLs = ['images/fatman1.png', 'images/fatman2.png', 'images/fatman3.png', 'images/fatman4.png', 'images/fatman5.png'];
             for (let i = 0; i < redBombFrameCount; i++) {
                 const frameImage = new Image();
-                frameImage.src = 'images/' + redBombFrameURLs[i];
+                frameImage.src = redBombFrameURLs[i];
                 frameImage.onerror = () => frameImage.src = `https://placehold.co/50x50/ff0000/ffffff?text=B${i+1}`;
                 redBombFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
 
-            const heartFrameURLs = ['heart1.png', 'heart2.png', 'heart3.png', 'heart4.png', 'heart5.png', 'heart6.png'];
+            const heartFrameURLs = ['images/heart1.png', 'images/heart2.png', 'images/heart3.png', 'images/heart4.png', 'images/heart5.png', 'images/heart6.png'];
             for (let i = 0; i < heartFrameCount; i++) {
                 const frameImage = new Image();
-                frameImage.src = 'images/' + heartFrameURLs[i];
+                frameImage.src = heartFrameURLs[i];
                 frameImage.onerror = () => frameImage.src = `https://placehold.co/50x50/00ff00/ffffff?text=H${i+1}`;
                 heartFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
 
-            const redAuraFrameURLs = ['red1.png', 'red2.png', 'red3.png', 'red4.png', 'red5.png', 'red6.png', 'red7.png', 'red8.png', 'red9.png', 'red10.png', 'red11.png', 'red12.png', 'red13.png'];
+            const redAuraFrameURLs = ['images/red1.png', 'images/red2.png', 'images/red3.png', 'images/red4.png', 'images/red5.png', 'images/red6.png', 'images/red7.png', 'images/red8.png', 'images/red9.png', 'images/red10.png', 'images/red11.png', 'images/red12.png', 'images/red13.png'];
             for (let i = 0; i < redAuraFrameCount; i++) {
                 const frameImage = new Image();
-                frameImage.src = 'images/' + redAuraFrameURLs[i];
+                frameImage.src = redAuraFrameURLs[i];
                 frameImage.onerror = () => frameImage.src = `https://placehold.co/50x50/ff0000/ffffff?text=R${i+1}`;
                 redAuraFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
 
-            const greenAuraFrameURLs = ['green1.png', 'green2.png', 'green3.png', 'green4.png', 'green5.png', 'green6.png', 'green7.png', 'green8.png', 'green9.png', 'green10.png', 'green11.png', 'green12.png', 'green13.png'];
+            const greenAuraFrameURLs = ['images/green1.png', 'images/green2.png', 'images/green3.png', 'images/green4.png', 'images/green5.png', 'images/green6.png', 'images/green7.png', 'images/green8.png', 'images/green9.png', 'images/green10.png', 'images/green11.png', 'images/green12.png', 'images/green13.png'];
             for (let i = 0; i < greenAuraFrameCount; i++) {
                  const frameImage = new Image();
-                 frameImage.src = 'images/' + greenAuraFrameURLs[i];
+                 frameImage.src = greenAuraFrameURLs[i];
                  frameImage.onerror = () => frameImage.src = `https://placehold.co/50x50/00ff00/ffffff?text=G${i+1}`;
                  greenAuraFrames.push(frameImage);
                  assetsToLoad.push(frameImage);
             }
 
-            const yellowAuraFrameURLs = ['yellow1.png', 'yellow2.png', 'yellow3.png', 'yellow4.png', 'yellow5.png', 'yellow6.png', 'yellow7.png', 'yellow8.png', 'yellow9.png', 'yellow10.png', 'yellow11.png', 'yellow12.png'];
+            const yellowAuraFrameURLs = ['images/yellow1.png', 'images/yellow2.png', 'images/yellow3.png', 'images/yellow4.png', 'images/yellow5.png', 'images/yellow6.png', 'images/yellow7.png', 'images/yellow8.png', 'images/yellow9.png', 'images/yellow10.png', 'images/yellow11.png', 'images/yellow12.png'];
             for (let i = 0; i < yellowAuraFrameCount; i++) {
                  const frameImage = new Image();
-                 frameImage.src = 'images/' + yellowAuraFrameURLs[i];
+                 frameImage.src = yellowAuraFrameURLs[i];
                  frameImage.onerror = () => frameImage.src = `https://placehold.co/50x50/ffff00/ffffff?text=Y${i+1}`;
                  yellowAuraFrames.push(frameImage);
                  assetsToLoad.push(frameImage);
             }
 
-            const rayAuraFrameURLs = ['ray1.png', 'ray2.png', 'ray3.png', 'ray4.png', 'ray5.png'];
+            const rayAuraFrameURLs = ['images/ray1.png', 'images/ray2.png', 'images/ray3.png', 'images/ray4.png', 'images/ray5.png'];
             for (let i = 0; i < rayAuraFrameCount; i++) {
                 const frameImage = new Image();
-                frameImage.src = 'images/' + rayAuraFrameURLs[i];
+                frameImage.src = rayAuraFrameURLs[i];
                 frameImage.onerror = () => frameImage.src = `https://placehold.co/50x50/ffff00/ffffff?text=RAY${i+1}`;
                 rayAuraFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
 
-            const wrenchFrameURLs = ['wrench1.png', 'wrench2.png', 'wrench3.png', 'wrench4.png', 'wrench5.png'];
+            const wrenchFrameURLs = ['images/wrench1.png', 'images/wrench2.png', 'images/wrench3.png', 'images/wrench4.png', 'images/wrench5.png'];
             for (let i = 0; i < wrenchFrameCount; i++) {
                 const frameImage = new Image();
-                frameImage.src = 'images/' + wrenchFrameURLs[i];
+                frameImage.src = wrenchFrameURLs[i];
                 frameImage.onerror = () => frameImage.src = `https://placehold.co/50x50/ffff00/ffffff?text=W${i+1}`;
                 wrenchFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
 
-            const blastFrameURLs = ['blast1.png', 'blast2.png', 'blast3.png', 'blast4.png', 'blast5.png', 'blast6.png', 'blast7.png', 'blast8.png', 'blast9.png', 'blast10.png', 'blast11.png', 'blast12.png', 'blast13.png', 'blast14.png', 'blast15.png'];
+            const blastFrameURLs = ['images/blast1.png', 'images/blast2.png', 'images/blast3.png', 'images/blast4.png', 'images/blast5.png', 'images/blast6.png', 'images/blast7.png', 'images/blast8.png', 'images/blast9.png', 'images/blast10.png', 'images/blast11.png', 'images/blast12.png', 'images/blast13.png', 'images/blast14.png', 'images/blast15.png'];
             for (let i = 0; i < blastFrameCount; i++) {
                 const frameImage = new Image();
-                frameImage.src = 'images/' + blastFrameURLs[i];
+                frameImage.src = blastFrameURLs[i];
                 frameImage.onerror = () => frameImage.src = `https://placehold.co/100x100/ff9900/ffffff?text=Boom${i+1}`;
                 blastFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
@@ -1099,12 +1105,28 @@
                 });
             });
 
-            Promise.all(assetPromises).then(() => {
+            const audioPromises = [introMusic, mainMenuMusicFile].map(audio => {
+                return new Promise((resolve) => {
+                    audio.addEventListener('canplaythrough', resolve, { once: true });
+                    audio.onerror = () => {
+                        console.error(`Audio file ${audio.src} failed to load, but continuing.`);
+                        resolve(); // Resolve even on error so the game doesn't get stuck
+                    };
+                });
+            });
+
+            Promise.all([...assetPromises, ...audioPromises]).then(() => {
                 console.log("All assets have been processed. Starting game.");
-                setTimeout(() => {
+                setTimeout(async () => {
                     loadingOverlay.style.display = 'none';
                     startScreenContent.style.visibility = 'visible';
                     startScreenContent.style.opacity = 1;
+                    try {
+                        await Tone.start();
+                        playIntroMusic();
+                    } catch (e) {
+                        console.error("Tone.js or intro music failed to start:", e);
+                    }
                 }, 500);
             });
 
@@ -1209,15 +1231,27 @@
             const lavaSound = new Tone.FMSynth({ harmonicity: 3.01, modulationIndex: 14, envelope: { attack: 0.2, decay: 0.3, sustain: 0.1, release: 1.2 }, modulation: { type: "square" }, modulationEnvelope: { attack: 0.2, decay: 0.1, sustain: 0.1, release: 0.1 } }).toDestination();
             const crackSound = new Tone.NoiseSynth({ noise: { type: "pink" }, envelope: { attack: 0.001, decay: 0.1, sustain: 0, release: 0.1 } }).toDestination();
             const softRockHitSynth = new Tone.NoiseSynth({ noise: { type: "brown" }, envelope: { attack: 0.02, decay: 0.3, sustain: 0, release: 0.1 } }).toDestination();
-            const introSpaceSound = new Tone.PolySynth(Tone.Synth, { oscillator: { type: "sine" }, envelope: { attack: 4, decay: 2, sustain: 0, release: 4 } }).toDestination();
             const webSound = new Tone.NoiseSynth({ noise: { type: "pink" }, envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.1 } }).toDestination();
-            const mainMenuAmbient = new Tone.PolySynth(Tone.Synth, { oscillator: { type: "triangle" }, envelope: { attack: 0.05, decay: 0.5, sustain: 0.1, release: 1 }, volume: -10 }).toDestination();
             const purchaseSound = new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.05, decay: 0.2, sustain: 0, release: 0.3 }, volume: -10 }).toDestination();
 
-            function playIntroMusic() { introSpaceSound.triggerAttackRelease(["C3", "G3", "D4"], "4s"); }
-            function stopIntroMusic() { introSpaceSound.releaseAll(); }
-            function playMainMenuMusic() { if (Tone.context.state !== 'running') { Tone.start(); } mainMenuAmbient.triggerAttackRelease(["C4", "E4", "G4"], "10s"); }
-            function stopAllMusic() { mainMenuAmbient.releaseAll(); }
+            function playIntroMusic() {
+                introMusic.currentTime = 0;
+                introMusic.play().catch(e => console.error("Intro audio play failed. User may need to interact with the page first.", e));
+            }
+            function stopIntroMusic() {
+                introMusic.pause();
+                introMusic.currentTime = 0;
+            }
+            // --- MODIFIED: Updated main menu music functions ---
+            function playMainMenuMusic() {
+                mainMenuMusicFile.currentTime = 0;
+                mainMenuMusicFile.play().catch(e => console.error("Main menu audio play failed.", e));
+            }
+            function stopAllMusic() {
+                stopIntroMusic();
+                mainMenuMusicFile.pause();
+                mainMenuMusicFile.currentTime = 0;
+            }
 
             // --- UI Management ---
             function showScreen(screenId) {
@@ -1358,7 +1392,6 @@
                 if (!introActive) return;
                 introActive = false;
                 if (introFrameId) { cancelAnimationFrame(introFrameId); }
-                stopIntroMusic();
                 showMainMenu();
             }
 
@@ -1368,7 +1401,6 @@
                 showScreen('intro');
                 try {
                     await Tone.start();
-                    playIntroMusic();
                     drawWeb();
                     setTimeout(stopIntro, 5000);
                 } catch (e) {
@@ -1826,7 +1858,6 @@
                     nebula2.x += nebula2.speedX;
                     nebula2.y += nebula2.speedY;
                     
-                    // --- MODIFIED: When it goes off the top-left corner, reset to a random position on the right or bottom edge ---
                     if (nebula2.x < -scaledWidth || nebula2.y < -scaledHeight) {
                         if (Math.random() > 0.5) {
                             // Reset to a random Y on the right edge
@@ -2658,7 +2689,10 @@
             }
 
             // --- Event Listeners ---
-            startPlayBtn.addEventListener('click', startIntro);
+            startPlayBtn.addEventListener('click', () => {
+                stopIntroMusic();
+                startIntro();
+            });
             startGameBtnInMenu.addEventListener('click', newGame);
             shopBtn.addEventListener('click', showShopMenu);
             shopBackBtn.addEventListener('click', backToMainMenu);
