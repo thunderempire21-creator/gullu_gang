@@ -322,6 +322,11 @@
         .purchase-button:hover {
             transform: translateY(-2px);
         }
+        /* --- NEW STYLE FOR UNLOCKABLE BUTTON --- */
+        .purchase-button.unlockable {
+            background: linear-gradient(45deg, #ffdf00, #ffb800);
+            box-shadow: 0 5px 15px rgba(255, 223, 0, 0.5);
+        }
         .shop-header {
             font-size: 2rem;
             margin-bottom: 1rem;
@@ -697,6 +702,12 @@
             let isExploding = false;
             let isPlayerExploding = false;
             let playerExplosionPos = { x: 0, y: 0 };
+            // --- NEW: Player Fire Variables ---
+            let isPlayerOnFire = false;
+            let fireFrames = [];
+            const fireFrameCount = 75;
+            let currentFireFrame = 0;
+            const fireAnimationSpeed = 2; // Faster for a flickering effect
             // --- Earth Animation Variables ---
             let earthFrames = [];
             const earthFrameCount = 6;
@@ -708,9 +719,6 @@
             // --- Lava Animation Variables ---
             let lavaFrames = [];
             const lavaFrameCount = 4;
-            // --- MODIFICATION START: Removed activeLavaEffects array ---
-            // let activeLavaEffects = []; 
-            // --- MODIFICATION END ---
             let currentLavaFrame = 0;
             const lavaAnimationSpeed = 10;
             // --- Coin Animation Variables ---
@@ -886,6 +894,15 @@
                 frameImage.src = lavaFrameURLs[i];
                 frameImage.onerror = () => frameImage.src = `https://placehold.co/50x50/ff6600/ffffff?text=Lava${i+1}`;
                 lavaFrames.push(frameImage);
+                assetsToLoad.push(frameImage);
+            }
+            // --- NEW: Load Fire Animation Frames ---
+            for (let i = 0; i < fireFrameCount; i++) {
+                const frameNumber = (51 + i).toString().padStart(4, '0');
+                const frameImage = new Image();
+                frameImage.src = `images/fire1_${frameNumber}.png`;
+                frameImage.onerror = () => frameImage.src = `https://placehold.co/100x100/ff6600/ffffff?text=F${i}`;
+                fireFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
             const smallAsteroidImage = new Image();
@@ -1304,6 +1321,7 @@
                 earthCracks = [];
                 isExploding = false;
                 isPlayerExploding = false;
+                isPlayerOnFire = false; // Reset fire state
                 explosionParticles = [];
                 hitExplosions = [];
                 frameCount = 0;
@@ -1347,6 +1365,7 @@
                 if (gameOver) return;
                 if (frameCount % earthAnimationSpeed === 0) { currentEarthFrame = (currentEarthFrame + 1) % earthFrameCount; }
                 if (frameCount % lavaAnimationSpeed === 0) { currentLavaFrame = (currentLavaFrame + 1) % lavaFrameCount; }
+                if (frameCount % fireAnimationSpeed === 0) { currentFireFrame = (currentFireFrame + 1) % fireFrameCount; }
                 if (frameCount % coinAnimationSpeed === 0) { currentCoinFrame = (currentCoinFrame + 1) % coinFrameCount; }
                 if (frameCount % redBombAnimationSpeed === 0) { currentRedBombFrame = (currentRedBombFrame + 1) % redBombFrameCount; }
                 if (frameCount % heartAnimationSpeed === 0) { currentHeartFrame = (currentHeartFrame + 1) % heartFrameCount; }
@@ -1363,6 +1382,7 @@
                 drawStars();
                 drawPlanet();
                 drawPlayer();
+                drawPlayerFire(); // Draw fire on top of player
                 drawImpactExplosions();
                 drawHitExplosions();
                 drawAsteroids();
@@ -1439,9 +1459,6 @@
                         earthHealthDisplay.innerText = earthHealth;
                         let crackType = (asteroid.radius <= 8) ? 'small' : (asteroid.radius <= 12 ? 'medium' : 'large');
                         addEarthCrack(asteroid, crackType);
-                        // --- MODIFICATION START: Removed addLavaEffect call ---
-                        // addLavaEffect(asteroid);
-                        // --- MODIFICATION END ---
                         asteroids.splice(i, 1);
                         if (earthHealth <= 0 && !isExploding) {
                             isExploding = true;
@@ -1561,6 +1578,7 @@
                             playerHealth += health_restore;
                             if (playerHealth > 100) playerHealth = 100;
                             playerHealthDisplay.innerText = playerHealth;
+                            isPlayerOnFire = false; // Extinguish fire
                             beamRemoved = true;
                             break;
                         }
@@ -1611,6 +1629,7 @@
                         playerHealth -= damage.player;
                         if (playerHealth < 0) playerHealth = 0;
                         playerHealthDisplay.innerText = playerHealth;
+                        isPlayerOnFire = true; // Ignite fire
                         asteroids.splice(i, 1);
                         if (playerHealth <= 0 && !isPlayerExploding) {
                             isPlayerExploding = true;
@@ -1629,6 +1648,7 @@
                                 asteroidHitSynth.triggerAttackRelease("16n");
                                 lastAsteroidHitTime = Tone.now();
                             }
+                            hitExplosions.push({ x: asteroid.x, y: asteroid.y, radius: asteroid.radius, currentFrame: 0 });
                             asteroids.splice(i, 1);
                         }
                     }
@@ -1678,10 +1698,7 @@
                 const impactY = planet.y + (planet.radius - 5) * Math.sin(impactAngle);
                 earthCracks.push({ image: selectedImage, x: impactX, y: impactY, angle: impactAngle, timer: 90 });
             }
-            
-            // --- MODIFICATION START: Removed addLavaEffect and drawLavaEffects functions ---
-            // --- MODIFICATION END ---
-
+           
             function drawCracks() {
                 earthCracks.forEach(crack => {
                     if (crack.image.complete) {
@@ -1697,7 +1714,6 @@
                     }
                 });
             }
-            // --- MODIFICATION START: Rewrote drawLavaCore to use animated frames ---
             function drawLavaCore() {
                 if (earthHealth < 100) {
                     const lavaRadius = planet.radius * (1 - earthHealth / 100);
@@ -1713,7 +1729,6 @@
                     }
                 }
             }
-            // --- MODIFICATION END ---
             function drawEarthExplosion() {
                 const frameIndex = Math.floor(currentEarthExplosionFrame);
                 if (frameIndex < earthExplosionFrameCount) {
@@ -1749,7 +1764,6 @@
                     ctx.closePath();
                     ctx.shadowBlur = 0;
                 }
-                // --- MODIFICATION START: Draw effects inside the planet clip ---
                 ctx.save();
                 ctx.beginPath();
                 ctx.arc(planet.x, planet.y, planet.radius, 0, Math.PI * 2);
@@ -1757,7 +1771,6 @@
                 drawLavaCore(); 
                 drawCracks();
                 ctx.restore();
-                // --- MODIFICATION END ---
             }
             function drawIronMan(context, size) { if (ironManImage.complete) { context.drawImage(ironManImage, -size, -size, size * 2, size * 2); } }
             function drawGreenHulk(context, size) { if (greenHulkImage.complete) { context.drawImage(greenHulkImage, -size, -size, size * 2, size * 2); } }
@@ -1881,6 +1894,20 @@
                     currentSkin.draw(ctx, player.size);
                 }
                 ctx.restore();
+            }
+            function drawPlayerFire() {
+                if (isPlayerOnFire) {
+                    const currentFrameImage = fireFrames[currentFireFrame];
+                    if (currentFrameImage && currentFrameImage.complete) {
+                        // --- MODIFICATION START: Reduced fire size ---
+                        const fireSize = player.size * 2.5; 
+                        // --- MODIFICATION END ---
+                        ctx.save();
+                        ctx.translate(player.x, player.y);
+                        ctx.drawImage(currentFrameImage, -fireSize / 2, -fireSize / 2, fireSize, fireSize);
+                        ctx.restore();
+                    }
+                }
             }
             function drawPlayerExplosion() {
                 if (currentBlastFrame < blastFrameCount) {
@@ -2233,16 +2260,26 @@
                     optionDiv.dataset.skinKey = key;
                     let statusText = '';
                     let buttonHtml = '';
-                    if (isSelected) { statusText = 'Equipped'; }
-                    else if (isUnlocked) {
+                    if (isSelected) {
+                        statusText = 'Equipped';
+                    } else if (isUnlocked) {
                         statusText = 'Unlocked';
                         buttonHtml = `<button class="purchase-button" data-action="equip">Equip</button>`;
                     } else {
+                        const hasEnoughCoins = coins >= skin.price;
+                        const hasHighScore = !skin.high_score_req || currentHighScore >= skin.high_score_req;
                         let requirements = [];
-                        if (skin.high_score_req) { requirements.push(`Score > ${skin.high_score_req}`); }
-                        if (skin.price) { requirements.push(`${skin.price} Coins`); }
+                        if (skin.high_score_req) {
+                            requirements.push(`Score > ${skin.high_score_req}`);
+                        }
+                        if (skin.price) {
+                            requirements.push(`${skin.price} Coins`);
+                        }
                         statusText = `Requires: ${requirements.join(' & ')}`;
-                        buttonHtml = `<button class="purchase-button" data-action="unlock">Unlock</button>`;
+                        // --- MODIFICATION START: Add 'unlockable' class if requirements are met ---
+                        const unlockableClass = (hasEnoughCoins && hasHighScore) ? 'unlockable' : '';
+                        buttonHtml = `<button class="purchase-button ${unlockableClass}" data-action="unlock">Unlock</button>`;
+                        // --- MODIFICATION END ---
                     }
                     optionDiv.innerHTML = `<div class="skin-option-content"><canvas id="skin-canvas-${key}" width="60" height="60"></canvas><h3>${skin.name}</h3></div><span class="unlock-cost">${statusText}</span>${buttonHtml}`;
                     skinsOptionsContainer.appendChild(optionDiv);
@@ -2436,6 +2473,7 @@
                     playerHealthDisplay.innerText = 100;
                     earthHealth = 100;
                     earthHealthDisplay.innerText = 100;
+                    isPlayerOnFire = false; // Extinguish fire on revive
                     reviveCount++;
                     gameOver = false;
                     gamePaused = false;
