@@ -17,6 +17,11 @@
             align-items: center;
             height: 100vh;
             background-color: #0d0d1a;
+            /* --- MODIFIED: Added background image path --- */
+            background-image: url('images/Wow.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
             font-family: 'Orbitron', sans-serif;
             color: #fff;
             position: relative;
@@ -36,7 +41,8 @@
             position: relative;
             width: 100%;
             height: 100%;
-            background-color: #0d0d1a;
+            /* Use a semi-transparent overlay to see the background image */
+            background-color: rgba(13, 13, 26, 0.5);
         }
         .ui-overlay {
             position: absolute;
@@ -635,6 +641,7 @@
             const coinDisplay = document.getElementById('coins');
             const coinMultiplierTimerDisplay = document.getElementById('coin-multiplier-timer');
             const coinMultiplierTimeSpan = document.getElementById('coin-multiplier-time');
+
             const startScreen = document.getElementById('start-screen');
             const startPlayBtn = document.getElementById('start-play-btn');
             const loadingOverlay = document.getElementById('loading-overlay');
@@ -659,6 +666,7 @@
             const instructionsBtnGameover = document.getElementById('instructions-btn-gameover');
             const instructionsBackBtn = document.getElementById('instructions-back-btn');
             const reviveBtn = document.getElementById('revive-btn');
+
             // --- Game State Variables ---
             let animationFrameId;
             let gamePaused = false;
@@ -673,6 +681,7 @@
             let doubleBeamTimer = 0;
             let doubleCoinsActive = false;
             let doubleCoinsTimer = 0;
+
             let asteroids = [];
             let powerUps = [];
             let healthPacks = [];
@@ -680,24 +689,30 @@
             let stars = [];
             let redBombs = [];
             let coinMultipliers = [];
-            let asteroidSpawnRate = 75; 
-            let asteroidSpeed = 1.2; 
+
+            let asteroidSpawnRate = 75;
+            let asteroidSpeed = 1.2;
             const powerUpSpawnInterval = 15 * 60;
             const redBombSpawnInterval = 15 * 60;
             const coinMultiplierSpawnInterval = 20 * 60;
             const powerUpStartDelay = 10 * 60;
             let frameCount = 0;
             let lastScoreIncrease = 0;
+
             let auraColor = null;
             let auraTimer = 0;
             let auraShimmer = 0;
+
             let pulseActive = false;
             let pulseRadius = 0;
             let maxPulseRadius;
+
             let reviveCount = 0;
             let previousScreen = 'mainMenu';
+
             let lastLavaSoundTime = 0;
             const lavaSoundCooldown = 0.5;
+
             let isExploding = false;
             let isPlayerExploding = false;
             let playerExplosionPos = { x: 0, y: 0 };
@@ -706,7 +721,7 @@
             const fireFrameCount = 75;
             let currentFireFrame = 0;
             const fireAnimationSpeed = 2;
-            let fireDamageInterval = null;
+
             // --- Earth Animation Variables ---
             let earthFrames = [];
             const earthFrameCount = 6;
@@ -715,21 +730,25 @@
             const planet = { x: 0, y: 0, radius: 50 };
             let earthCracks = [];
             let explosionParticles = [];
+
             // --- Lava Animation Variables ---
             let lavaFrames = [];
             const lavaFrameCount = 4;
             let currentLavaFrame = 0;
             const lavaAnimationSpeed = 10;
+
             // --- Coin Animation Variables ---
             let coinFrames = [];
             const coinFrameCount = 6;
             let currentCoinFrame = 0;
             const coinAnimationSpeed = 10;
+
             // --- Red Bomb Animation Variables ---
             let redBombFrames = [];
             const redBombFrameCount = 5;
             let currentRedBombFrame = 0;
             const redBombAnimationSpeed = 10;
+
             // --- Health Animation Variables ---
             let heartFrames = [];
             const heartFrameCount = 6;
@@ -759,17 +778,22 @@
             const blastFrameCount = 15;
             let currentBlastFrame = 0;
             const blastAnimationSpeed = 4;
+
             const nebulaImage = new Image();
             let nebula = { x: 0, y: 0, speedX: 0.1, speedY: 0.05 };
+
             let impactFrames = [];
             const impactFrameCount = 64;
             let impactExplosions = [];
+
             let hitFrames = [];
             const hitFrameCount = 64;
             let hitExplosions = [];
+
             let earthExplosionFrames = [];
             const earthExplosionFrameCount = 16;
             let currentEarthExplosionFrame = 0;
+
             let player = {
                 x: 0,
                 y: 0,
@@ -780,9 +804,11 @@
                 size: 15,
                 skin: localStorage.getItem('orbitDashCurrentSkin') || 'ironMan'
             };
+
             let lastCrashTime = 0;
             let lastAsteroidHitTime = 0;
             const soundCooldown = 0.05;
+
             const SKINS = {
                 'ironMan': { name: 'Iron Gullu', price: 0, draw: drawIronMan },
                 'greenHulk': { name: 'Green Gullu', price: 70, draw: drawGreenHulk },
@@ -792,6 +818,7 @@
                 'spidyGullu': { name: 'Spidy Gullu', price: 400, high_score_req: 150, draw: drawSpidyGullu }
             };
             let unlockedSkins = JSON.parse(localStorage.getItem('orbitDashUnlockedSkins')) || ['ironMan'];
+
             const UPGRADES = {
                 'health': {
                     name: 'Health Pack',
@@ -824,44 +851,54 @@
             let healthUpgradeLevel = parseInt(localStorage.getItem('healthUpgradeLevel') || 0);
             let doubleBeamUpgradeLevel = parseInt(localStorage.getItem('doubleBeamUpgradeLevel') || 0);
             let coinMultiplierUpgradeLevel = parseInt(localStorage.getItem('coinMultiplierUpgradeLevel') || 0);
+
+            // --- Asset Loading ---
             const assetsToLoad = [];
             const beamImages = {};
             const asteroidTailImage = new Image();
             asteroidTailImage.src = 'images/tail.png';
             asteroidTailImage.onerror = () => asteroidTailImage.src = 'https://placehold.co/60x30/ff8c00/ffffff?text=Tail';
             assetsToLoad.push(asteroidTailImage);
-            // --- NEW: Load asteroid aura image ---
+
             const asteroidAuraImage = new Image();
             asteroidAuraImage.src = 'images/aura1.png';
             asteroidAuraImage.onerror = () => asteroidAuraImage.src = 'https://placehold.co/100x100/ff8c00/ffffff?text=Aura';
             assetsToLoad.push(asteroidAuraImage);
+
             nebulaImage.src = 'images/nebula3.png';
             nebulaImage.onerror = () => nebulaImage.src = 'https://placehold.co/800x800/1a1a33/ffffff?text=Nebula+Not+Found';
             assetsToLoad.push(nebulaImage);
+
             const ironManImage = new Image();
             ironManImage.src = 'images/Ironman.png';
             ironManImage.onerror = () => ironManImage.src = 'https://placehold.co/100x100/ff0000/ffffff?text=IronMan';
             assetsToLoad.push(ironManImage);
+
             const greenHulkImage = new Image();
             greenHulkImage.src = 'images/hulk.png';
             greenHulkImage.onerror = () => greenHulkImage.src = 'https://placehold.co/100x100/00ff00/ffffff?text=Hulk';
             assetsToLoad.push(greenHulkImage);
+
             const blackWidowImage = new Image();
             blackWidowImage.src = 'images/widow.png';
             blackWidowImage.onerror = () => blackWidowImage.src = 'https://placehold.co/100x100/000000/ffffff?text=Widow';
             assetsToLoad.push(blackWidowImage);
+
             const captainAmericaImage = new Image();
             captainAmericaImage.src = 'images/captain.png';
             captainAmericaImage.onerror = () => captainAmericaImage.src = 'https://placehold.co/100x100/0000ff/ffffff?text=Cap';
             assetsToLoad.push(captainAmericaImage);
+
             const pantherGulluImage = new Image();
             pantherGulluImage.src = 'images/panther.png';
             pantherGulluImage.onerror = () => pantherGulluImage.src = 'https://placehold.co/100x100/8A2BE2/ffffff?text=Panther';
             assetsToLoad.push(pantherGulluImage);
+
             const spidyGulluImage = new Image();
             spidyGulluImage.src = 'images/spidy.png';
             spidyGulluImage.onerror = () => spidyGulluImage.src = 'https://placehold.co/100x100/FF0000/ffffff?text=Spidy';
             assetsToLoad.push(spidyGulluImage);
+
             beamImages['ironMan'] = new Image();
             beamImages['ironMan'].src = 'images/beam1.png';
             beamImages['greenHulk'] = new Image();
@@ -874,10 +911,12 @@
             beamImages['pantherGullu'].src = 'images/beam5.png';
             beamImages['spidyGullu'] = new Image();
             beamImages['spidyGullu'].src = 'images/beam6.png';
+
             for (const key in beamImages) {
                 beamImages[key].onerror = () => beamImages[key].src = `https://placehold.co/20x20/ffffff/000000?text=B`;
                 assetsToLoad.push(beamImages[key]);
             }
+
             const crackImageSmall = new Image();
             const crackImageMedium = new Image();
             const crackImageLarge = new Image();
@@ -888,6 +927,7 @@
             crackImageLarge.src = 'images/crack5.png';
             crackImageLarge.onerror = () => crackImageLarge.src = 'https://placehold.co/150x150/ffffff/000000?text=Crack';
             assetsToLoad.push(crackImageSmall, crackImageMedium, crackImageLarge);
+
             const earthFrameURLs = ['frame1.png', 'frame2.png', 'frame3.png', 'frame4.png', 'frame5.png', 'frame6.png'];
             for (let i = 0; i < earthFrameCount; i++) {
                 const frameImage = new Image();
@@ -896,6 +936,7 @@
                 earthFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
+
             const lavaFrameURLs = ['star1.png', 'star2.png', 'star3.png', 'star4.png'];
             for (let i = 0; i < lavaFrameCount; i++) {
                 const frameImage = new Image();
@@ -904,6 +945,7 @@
                 lavaFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
+
             for (let i = 0; i < fireFrameCount; i++) {
                 const frameNumber = (51 + i).toString().padStart(4, '0');
                 const frameImage = new Image();
@@ -912,6 +954,7 @@
                 fireFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
+
             const smallAsteroidImage = new Image();
             const mediumAsteroidImage = new Image();
             const largeAsteroidImage = new Image();
@@ -922,6 +965,7 @@
             largeAsteroidImage.src = 'images/large.png';
             largeAsteroidImage.onerror = () => largeAsteroidImage.src = 'https://placehold.co/70x70/964B00/ffffff?text=L';
             assetsToLoad.push(smallAsteroidImage, mediumAsteroidImage, largeAsteroidImage);
+
             const coinFrameURLs = ['coin1.png', 'coin2.png', 'coin3.png', 'coin4.png', 'coin5.png', 'coin6.png'];
             for (let i = 0; i < coinFrameCount; i++) {
                 const frameImage = new Image();
@@ -930,6 +974,7 @@
                 coinFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
+
             const redBombFrameURLs = ['fatman1.png', 'fatman2.png', 'fatman3.png', 'fatman4.png', 'fatman5.png'];
             for (let i = 0; i < redBombFrameCount; i++) {
                 const frameImage = new Image();
@@ -938,6 +983,7 @@
                 redBombFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
+
             const heartFrameURLs = ['heart1.png', 'heart2.png', 'heart3.png', 'heart4.png', 'heart5.png', 'heart6.png'];
             for (let i = 0; i < heartFrameCount; i++) {
                 const frameImage = new Image();
@@ -946,6 +992,7 @@
                 heartFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
+
             const redAuraFrameURLs = ['red1.png', 'red2.png', 'red3.png', 'red4.png', 'red5.png', 'red6.png', 'red7.png', 'red8.png', 'red9.png', 'red10.png', 'red11.png', 'red12.png', 'red13.png'];
             for (let i = 0; i < redAuraFrameCount; i++) {
                 const frameImage = new Image();
@@ -954,6 +1001,7 @@
                 redAuraFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
+
             const greenAuraFrameURLs = ['green1.png', 'green2.png', 'green3.png', 'green4.png', 'green5.png', 'green6.png', 'green7.png', 'green8.png', 'green9.png', 'green10.png', 'green11.png', 'green12.png', 'green13.png'];
             for (let i = 0; i < greenAuraFrameCount; i++) {
                  const frameImage = new Image();
@@ -962,6 +1010,7 @@
                  greenAuraFrames.push(frameImage);
                  assetsToLoad.push(frameImage);
             }
+
             const yellowAuraFrameURLs = ['yellow1.png', 'yellow2.png', 'yellow3.png', 'yellow4.png', 'yellow5.png', 'yellow6.png', 'yellow7.png', 'yellow8.png', 'yellow9.png', 'yellow10.png', 'yellow11.png', 'yellow12.png'];
             for (let i = 0; i < yellowAuraFrameCount; i++) {
                  const frameImage = new Image();
@@ -970,6 +1019,7 @@
                  yellowAuraFrames.push(frameImage);
                  assetsToLoad.push(frameImage);
             }
+
             const rayAuraFrameURLs = ['ray1.png', 'ray2.png', 'ray3.png', 'ray4.png', 'ray5.png'];
             for (let i = 0; i < rayAuraFrameCount; i++) {
                 const frameImage = new Image();
@@ -978,6 +1028,7 @@
                 rayAuraFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
+
             const wrenchFrameURLs = ['wrench1.png', 'wrench2.png', 'wrench3.png', 'wrench4.png', 'wrench5.png'];
             for (let i = 0; i < wrenchFrameCount; i++) {
                 const frameImage = new Image();
@@ -986,6 +1037,7 @@
                 wrenchFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
+
             const blastFrameURLs = ['blast1.png', 'blast2.png', 'blast3.png', 'blast4.png', 'blast5.png', 'blast6.png', 'blast7.png', 'blast8.png', 'blast9.png', 'blast10.png', 'blast11.png', 'blast12.png', 'blast13.png', 'blast14.png', 'blast15.png'];
             for (let i = 0; i < blastFrameCount; i++) {
                 const frameImage = new Image();
@@ -994,6 +1046,7 @@
                 blastFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
+
             for (let i = 1; i <= impactFrameCount; i++) {
                 const frameImage = new Image();
                 frameImage.src = `images/impact${i}.png`;
@@ -1001,6 +1054,7 @@
                 impactFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
+
             for (let i = 0; i < hitFrameCount; i++) {
                 const frameImage = new Image();
                 const frameNumber = i.toString().padStart(2, '0');
@@ -1009,6 +1063,7 @@
                 hitFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
+
             for (let i = 1; i <= earthExplosionFrameCount; i++) {
                 const frameImage = new Image();
                 frameImage.src = `images/explosion${i}.png`;
@@ -1025,7 +1080,7 @@
                         asset.onload = resolve;
                         asset.onerror = () => {
                             console.error("Asset failed to load, but continuing:", asset.src);
-                            resolve();
+                            resolve(); // Resolve even if an asset fails, to not block the game
                         };
                     }
                 });
@@ -1040,6 +1095,7 @@
                 }, 500);
             });
 
+            // --- TTS and Sound Synthesis ---
             function base64ToArrayBuffer(base64) {
                 const binaryString = window.atob(base64);
                 const len = binaryString.length;
@@ -1049,6 +1105,7 @@
                 }
                 return bytes.buffer;
             }
+
             function pcmToWav(pcmData, sampleRate) {
                 const numChannels = 1;
                 const bitsPerSample = 16;
@@ -1074,13 +1131,15 @@
                 }
                 return new Blob([buffer], { type: 'audio/wav' });
             }
+
             function writeString(view, offset, string) {
                 for (let i = 0; i < string.length; i++) {
                     view.setUint8(offset + i, string.charCodeAt(i));
                 }
             }
+
             async function speak(text, voiceName) {
-                const apiKey = "";
+                const apiKey = ""; // NOTE: API key is required for TTS
                 if (!apiKey) {
                     console.log(`TTS (no key): ${text}`);
                     return;
@@ -1123,6 +1182,7 @@
                     console.error('Error in TTS API call:', error);
                 }
             }
+
             const beamSynth = new Tone.Synth({ oscillator: { type: "triangle" }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.05, release: 0.1 }, volume: -10 }).toDestination();
             const crashNoise = new Tone.NoiseSynth({ noise: { type: "brown" }, envelope: { attack: 0.005, decay: 0.1, sustain: 0, release: 0.1 } }).toDestination();
             const gameOverNoise = new Tone.NoiseSynth({ noise: { type: "white" }, envelope: { attack: 0.005, decay: 0.5, sustain: 0, release: 0.5 } }).connect(new Tone.Filter(1000, "highpass")).toDestination();
@@ -1140,10 +1200,13 @@
             const webSound = new Tone.NoiseSynth({ noise: { type: "pink" }, envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.1 } }).toDestination();
             const mainMenuAmbient = new Tone.PolySynth(Tone.Synth, { oscillator: { type: "triangle" }, envelope: { attack: 0.05, decay: 0.5, sustain: 0.1, release: 1 }, volume: -10 }).toDestination();
             const purchaseSound = new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.05, decay: 0.2, sustain: 0, release: 0.3 }, volume: -10 }).toDestination();
+
             function playIntroMusic() { introSpaceSound.triggerAttackRelease(["C3", "G3", "D4"], "4s"); }
             function stopIntroMusic() { introSpaceSound.releaseAll(); }
             function playMainMenuMusic() { if (Tone.context.state !== 'running') { Tone.start(); } mainMenuAmbient.triggerAttackRelease(["C4", "E4", "G4"], "10s"); }
             function stopAllMusic() { mainMenuAmbient.releaseAll(); }
+
+            // --- UI Management ---
             function showScreen(screenId) {
                 startScreen.style.display = 'none';
                 mainMenuOverlay.style.display = 'none';
@@ -1156,6 +1219,7 @@
                 powerupTimerDisplay.style.display = 'none';
                 coinMultiplierTimerDisplay.style.display = 'none';
                 introOverlay.style.display = 'none';
+
                 if (screenId === 'startScreen') { startScreen.style.display = 'flex'; }
                 else if (screenId === 'mainMenu') { mainMenuOverlay.style.display = 'flex'; }
                 else if (screenId === 'gameOver') { gameOverOverlay.style.display = 'flex'; }
@@ -1170,6 +1234,7 @@
                     if (doubleCoinsActive) coinMultiplierTimerDisplay.style.display = 'block';
                 } else if (screenId === 'intro') { introOverlay.style.display = 'flex'; }
             }
+
             function showMainMenu() {
                 previousScreen = 'mainMenu';
                 gamePaused = true;
@@ -1182,16 +1247,19 @@
                 stopAllMusic();
                 playMainMenuMusic();
             }
+
             function showGameOverMenu() {
                 previousScreen = 'gameOver';
                 showScreen('gameOver');
                 stopAllMusic();
                 playMainMenuMusic();
             }
+
             function backToMainMenu() {
                 buttonClickSynth.triggerAttackRelease("C5", "8n");
                 showMainMenu();
             }
+
             function continueGame() {
                 buttonClickSynth.triggerAttackRelease("C5", "8n");
                 gamePaused = false;
@@ -1199,11 +1267,11 @@
                 stopAllMusic();
                 gameLoop();
             }
+
             function endGame(message) {
                 gameOver = true;
                 isGameStarted = false;
                 if (animationFrameId) { cancelAnimationFrame(animationFrameId); }
-                if (fireDamageInterval) { clearInterval(fireDamageInterval); fireDamageInterval = null; } // Stop fire damage on game over
                 speak("Game Over", "Kore");
                 document.getElementById('game-over-title').innerText = 'Game Over';
                 document.getElementById('game-over-message').innerText = message;
@@ -1219,6 +1287,7 @@
                 }
                 showGameOverMenu();
             }
+
             let introFrameId = null;
             let introActive = false;
             function resizeIntroCanvas() {
@@ -1227,6 +1296,7 @@
             }
             window.addEventListener('resize', resizeIntroCanvas);
             resizeIntroCanvas();
+
             function drawWeb() {
                 const centerX = introCanvas.width / 2;
                 const centerY = introCanvas.height / 2;
@@ -1270,6 +1340,7 @@
                 }
                 animateWeb();
             }
+
             function stopIntro() {
                 if (!introActive) return;
                 introActive = false;
@@ -1277,6 +1348,7 @@
                 stopIntroMusic();
                 showMainMenu();
             }
+
             async function startIntro() {
                 if (introActive) return;
                 introActive = true;
@@ -1291,6 +1363,7 @@
                     stopIntro();
                 }
             }
+
             function resizeCanvas() {
                 canvas.width = Math.min(window.innerWidth * 0.9, window.innerHeight * 0.9);
                 canvas.height = canvas.width;
@@ -1303,11 +1376,12 @@
             }
             window.addEventListener('resize', resizeCanvas);
             resizeCanvas();
+
+            // --- Game Start/Reset ---
             function newGame() {
                 buttonClickSynth.triggerAttackRelease("C5", "8n");
                 showScreen('game');
                 stopAllMusic();
-                if (fireDamageInterval) { clearInterval(fireDamageInterval); fireDamageInterval = null; }
                 isGameStarted = true;
                 asteroidSpeed = 1.2;
                 player.speed = 0.02;
@@ -1348,17 +1422,19 @@
                 coinDisplay.innerText = coins;
                 gameLoop();
             }
+
+            // --- Main Game Loop ---
             function gameLoop() {
                 if (gameOver) return;
-                
                 if (playerHealth <= 0 && !isPlayerExploding && !gameOver) {
                     isPlayerExploding = true;
                     playerExplosionPos = { x: player.x, y: player.y };
                     currentBlastFrame = 0;
                     explosionNoise.triggerAttackRelease("1s");
                 }
-
                 if (gamePaused) return;
+
+                // --- Handle special states like explosions ---
                 if (isPlayerExploding) {
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                     drawNebula();
@@ -1380,7 +1456,8 @@
                     animationFrameId = requestAnimationFrame(gameLoop);
                     return;
                 }
-                
+
+                // --- Update Animation Frames ---
                 if (frameCount % earthAnimationSpeed === 0) { currentEarthFrame = (currentEarthFrame + 1) % earthFrameCount; }
                 if (frameCount % lavaAnimationSpeed === 0) { currentLavaFrame = (currentLavaFrame + 1) % lavaFrameCount; }
                 if (frameCount % fireAnimationSpeed === 0) { currentFireFrame = (currentFireFrame + 1) % fireFrameCount; }
@@ -1392,9 +1469,38 @@
                 if (frameCount % yellowAuraAnimationSpeed === 0) { currentYellowAuraFrame = (currentYellowAuraFrame + 1) % yellowAuraFrameCount; }
                 if (frameCount % rayAuraAnimationSpeed === 0) { currentRayAuraFrame = (currentRayAuraFrame + 1) % rayAuraFrameCount; }
                 if (frameCount % wrenchAnimationSpeed === 0) { currentWrenchFrame = (currentWrenchFrame + 1) % wrenchFrameCount; }
+
+                // --- MODIFIED: Handle timers inside the game loop ---
+                if (frameCount % 60 === 0) { // Update timers roughly every second
+                    if (doubleBeamActive && doubleBeamTimer > 0) {
+                        doubleBeamTimer--;
+                        powerupTimeSpan.innerText = doubleBeamTimer;
+                        if (doubleBeamTimer <= 0) {
+                            doubleBeamActive = false;
+                            powerupTimerDisplay.style.display = 'none';
+                            if (auraColor === 'rayAura') auraColor = null;
+                        }
+                    }
+                    if (doubleCoinsActive && doubleCoinsTimer > 0) {
+                        doubleCoinsTimer--;
+                        coinMultiplierTimeSpan.innerText = doubleCoinsTimer;
+                        if (doubleCoinsTimer <= 0) {
+                            doubleCoinsActive = false;
+                            coinMultiplierTimerDisplay.style.display = 'none';
+                            if (auraColor === 'yellowAura') auraColor = null;
+                        }
+                    }
+                    if (isPlayerOnFire && playerHealth > 0) {
+                        playerHealth -= 0.5; // Damage per second
+                        playerHealthDisplay.innerText = Math.ceil(playerHealth);
+                    }
+                }
+
+                // --- Update and Draw ---
                 updatePlayer();
                 updateObjects();
                 checkCollisions();
+
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 drawNebula();
                 drawStars();
@@ -1408,9 +1514,11 @@
                 drawPowerUps();
                 drawBeams();
                 drawPulse();
+
                 frameCount++;
                 animationFrameId = requestAnimationFrame(gameLoop);
             }
+
             function distance(x1, y1, x2, y2) { return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2)); }
             function getAsteroidDamage(asteroid) {
                 let damage = { player: 0, earth: 0 };
@@ -1419,11 +1527,13 @@
                 else { damage.player = 8; damage.earth = 8; }
                 return damage;
             }
+
             function updatePlayer() {
                 player.angle += player.speed * player.direction;
                 player.x = planet.x + player.orbitRadius * Math.cos(player.angle);
                 player.y = planet.y + player.orbitRadius * Math.sin(player.angle);
             }
+
             function updateAura() {
                 if (auraTimer > 0) {
                     auraTimer--;
@@ -1431,6 +1541,7 @@
                     if (auraTimer <= 0) { auraColor = null; }
                 }
             }
+
             function updatePulse() {
                 if (pulseActive) {
                     pulseRadius += 2.5;
@@ -1440,6 +1551,7 @@
                     }
                 }
             }
+
             function updateExplosionParticles() {
                 for (let i = explosionParticles.length - 1; i >= 0; i--) {
                     let p = explosionParticles[i];
@@ -1449,13 +1561,16 @@
                     if (p.alpha <= 0) { explosionParticles.splice(i, 1); }
                 }
             }
+
             function updateCracks() {
                 for (let i = earthCracks.length - 1; i >= 0; i--) {
                     earthCracks[i].timer--;
                     if (earthCracks[i].timer <= 0) { earthCracks.splice(i, 1); }
                 }
             }
+
             function updateObjects() {
+                // Update beams
                 for (let i = beams.length - 1; i >= 0; i--) {
                     let beam = beams[i];
                     beam.x += beam.vx;
@@ -1464,6 +1579,7 @@
                         beams.splice(i, 1);
                     }
                 }
+                // Update asteroids
                 for (let i = asteroids.length - 1; i >= 0; i--) {
                     let asteroid = asteroids[i];
                     asteroid.x += asteroid.vx;
@@ -1487,6 +1603,7 @@
                         asteroids.splice(i, 1);
                     }
                 }
+                // Update other flying objects
                 [redBombs, powerUps, healthPacks, coinMultipliers].forEach(array => {
                     for (let i = array.length - 1; i >= 0; i--) {
                         let object = array[i];
@@ -1499,16 +1616,20 @@
                         }
                     }
                 });
+
                 updateAura();
                 updatePulse();
                 updateExplosionParticles();
                 updateCracks();
                 spawnObjects();
             }
+
             function checkCollisions() {
+                // Beams vs other objects
                 for (let i = beams.length - 1; i >= 0; i--) {
                     let beam = beams[i];
                     let beamRemoved = false;
+                    // vs Asteroids
                     for (let j = asteroids.length - 1; j >= 0; j--) {
                         let asteroid = asteroids[j];
                         if (distance(beam.x, beam.y, asteroid.x, asteroid.y) < beam.size + asteroid.radius) {
@@ -1527,8 +1648,8 @@
                                 currentHighScore = score;
                                 localStorage.setItem('orbitDashHighScore', currentHighScore);
                             }
-                            if (score > lastScoreIncrease && score % 20 === 0) { 
-                                asteroidSpeed += 0.05;
+                            if (score > lastScoreIncrease && score % 20 === 0) {
+                                 asteroidSpeed += 0.05;
                                 if (asteroidSpawnRate > 25) {
                                     asteroidSpawnRate -= 2;
                                 }
@@ -1541,6 +1662,7 @@
                         }
                     }
                     if (beamRemoved) continue;
+                    // vs Red Bombs
                     for (let j = redBombs.length - 1; j >= 0; j--) {
                         let bomb = redBombs[j];
                         if (distance(beam.x, beam.y, bomb.x, bomb.y) < beam.size + bomb.radius) {
@@ -1556,6 +1678,7 @@
                         }
                     }
                     if (beamRemoved) continue;
+                    // vs Double Beam Powerups
                     for (let j = powerUps.length - 1; j >= 0; j--) {
                         let powerUp = powerUps[j];
                         if (distance(beam.x, beam.y, powerUp.x, powerUp.y) < beam.size + powerUp.radius) {
@@ -1564,29 +1687,19 @@
                             auraColor = 'rayAura';
                             auraTimer = (UPGRADES.doubleBeam.base_duration + (UPGRADES.doubleBeam.level_duration_increase * doubleBeamUpgradeLevel)) * 60;
                             shimmerSynth.triggerAttackRelease("C5", "8n");
+                            // --- MODIFIED: Removed setInterval, timers handled in gameLoop ---
                             if (!doubleBeamActive) {
                                 doubleBeamActive = true;
                                 doubleBeamTimer = UPGRADES.doubleBeam.base_duration + (UPGRADES.doubleBeam.level_duration_increase * doubleBeamUpgradeLevel);
+                                powerupTimeSpan.innerText = doubleBeamTimer;
                                 powerupTimerDisplay.style.display = 'block';
-                                const timerInterval = setInterval(() => {
-                                    if (gamePaused) return;
-                                    doubleBeamTimer--;
-                                    powerupTimeSpan.innerText = doubleBeamTimer;
-                                    if (doubleBeamTimer <= 0) {
-                                        clearInterval(timerInterval);
-                                        doubleBeamActive = false;
-                                        powerupTimerDisplay.style.display = 'none';
-                                        if (auraColor === 'rayAura') {
-                                            auraColor = null;
-                                        }
-                                    }
-                                }, 1000);
                             }
                             beamRemoved = true;
                             break;
                         }
                     }
                     if (beamRemoved) continue;
+                    // vs Health Packs
                     for (let j = healthPacks.length - 1; j >= 0; j--) {
                         let healthPack = healthPacks[j];
                         if (distance(beam.x, beam.y, healthPack.x, healthPack.y) < beam.size + healthPack.radius) {
@@ -1599,13 +1712,14 @@
                             playerHealth += health_restore;
                             if (playerHealth > 100) playerHealth = 100;
                             playerHealthDisplay.innerText = Math.ceil(playerHealth);
+                            // --- MODIFIED: Removed clearInterval ---
                             isPlayerOnFire = false;
-                            if (fireDamageInterval) { clearInterval(fireDamageInterval); fireDamageInterval = null; }
                             beamRemoved = true;
                             break;
                         }
                     }
                     if (beamRemoved) continue;
+                    // vs Coin Multipliers
                     for (let j = coinMultipliers.length - 1; j >= 0; j--) {
                         let coinMultiplier = coinMultipliers[j];
                         if (distance(beam.x, beam.y, coinMultiplier.x, coinMultiplier.y) < beam.size + coinMultiplier.radius) {
@@ -1614,29 +1728,20 @@
                             auraColor = 'yellowAura';
                             auraTimer = (UPGRADES.coinMultiplier.base_duration + (UPGRADES.coinMultiplier.level_duration_increase * coinMultiplierUpgradeLevel)) * 60;
                             coinSound.triggerAttackRelease("G6", "4n");
+                            // --- MODIFIED: Removed setInterval ---
                             if (!doubleCoinsActive) {
                                 doubleCoinsActive = true;
                                 doubleCoinsTimer = UPGRADES.coinMultiplier.base_duration + (UPGRADES.coinMultiplier.level_duration_increase * coinMultiplierUpgradeLevel);
+                                coinMultiplierTimeSpan.innerText = doubleCoinsTimer;
                                 coinMultiplierTimerDisplay.style.display = 'block';
-                                const timerInterval = setInterval(() => {
-                                    if (gamePaused) return;
-                                    doubleCoinsTimer--;
-                                    coinMultiplierTimeSpan.innerText = doubleCoinsTimer;
-                                    if (doubleCoinsTimer <= 0) {
-                                        clearInterval(timerInterval);
-                                        doubleCoinsActive = false;
-                                        coinMultiplierTimerDisplay.style.display = 'none';
-                                        if (auraColor === 'yellowAura') {
-                                            auraColor = null;
-                                        }
-                                    }
-                                }, 1000);
                             }
                             beamRemoved = true;
                             break;
                         }
                     }
                 }
+
+                // Asteroids vs Player
                 let playerHit = false;
                 for (let i = asteroids.length - 1; i >= 0; i--) {
                     let asteroid = asteroids[i];
@@ -1651,19 +1756,14 @@
                         playerHealth -= damage.player;
                         if (playerHealth < 0) playerHealth = 0;
                         playerHealthDisplay.innerText = Math.ceil(playerHealth);
+                        // --- MODIFIED: Removed setInterval ---
                         isPlayerOnFire = true;
-                        if (!fireDamageInterval) {
-                            fireDamageInterval = setInterval(() => {
-                                if (!gamePaused && isPlayerOnFire && playerHealth > 0) {
-                                    playerHealth -= 0.5;
-                                    playerHealthDisplay.innerText = Math.ceil(playerHealth);
-                                }
-                            }, 1000);
-                        }
                         asteroids.splice(i, 1);
                         if (playerHit) break;
                     }
                 }
+
+                // Pulse wave vs Asteroids
                 if (pulseActive) {
                     for (let i = asteroids.length - 1; i >= 0; i--) {
                         let asteroid = asteroids[i];
@@ -1678,6 +1778,8 @@
                     }
                 }
             }
+
+            // --- Drawing Functions ---
             function createStars() {
                 stars = [];
                 const starCount = 800;
@@ -1685,6 +1787,7 @@
                     stars.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, radius: Math.random() * 1.5, opacity: Math.random() });
                 }
             }
+
             function drawNebula() {
                 if (nebulaImage.complete && nebulaImage.width > 0) {
                     const scale = 0.5;
@@ -1699,6 +1802,7 @@
                     ctx.drawImage(nebulaImage, nebula.x, nebula.y, scaledWidth, scaledHeight);
                 }
             }
+
             function drawStars() {
                 stars.forEach(star => {
                     star.x -= nebula.speedX * 1.5;
@@ -1714,6 +1818,7 @@
                     ctx.closePath();
                 });
             }
+
             function addEarthCrack(asteroid, crackType) {
                 crackSound.triggerAttackRelease("32n");
                 let selectedImage = (crackType === 'small') ? crackImageSmall : crackImageMedium;
@@ -1722,7 +1827,7 @@
                 const impactY = planet.y + (planet.radius - 5) * Math.sin(impactAngle);
                 earthCracks.push({ image: selectedImage, x: impactX, y: impactY, angle: impactAngle, timer: 90 });
             }
-            
+
             function drawCracks() {
                 earthCracks.forEach(crack => {
                     if (crack.image.complete) {
@@ -1738,6 +1843,7 @@
                     }
                 });
             }
+
             function drawLavaCore() {
                 if (earthHealth < 100) {
                     const lavaRadius = planet.radius * (1 - earthHealth / 100);
@@ -1753,6 +1859,7 @@
                     }
                 }
             }
+
             function drawEarthExplosion() {
                 const frameIndex = Math.floor(currentEarthExplosionFrame);
                 if (frameIndex < earthExplosionFrameCount) {
@@ -1766,6 +1873,7 @@
                     endGame("The Earth was destroyed!");
                 }
             }
+
             function drawPlanet() {
                 if (isExploding) return;
                 const currentFrameImage = earthFrames[currentEarthFrame];
@@ -1792,16 +1900,18 @@
                 ctx.beginPath();
                 ctx.arc(planet.x, planet.y, planet.radius, 0, Math.PI * 2);
                 ctx.clip();
-                drawLavaCore(); 
+                drawLavaCore();
                 drawCracks();
                 ctx.restore();
             }
+
             function drawIronMan(context, size) { if (ironManImage.complete) { context.drawImage(ironManImage, -size, -size, size * 2, size * 2); } }
             function drawGreenHulk(context, size) { if (greenHulkImage.complete) { context.drawImage(greenHulkImage, -size, -size, size * 2, size * 2); } }
             function drawBlackWidow(context, size) { if (blackWidowImage.complete) { context.drawImage(blackWidowImage, -size, -size, size * 2, size * 2); } }
             function drawCaptainAmerica(context, size) { if (captainAmericaImage.complete) { context.drawImage(captainAmericaImage, -size, -size, size * 2, size * 2); } }
             function drawPantherGullu(context, size) { if (pantherGulluImage.complete) { context.drawImage(pantherGulluImage, -size, -size, size * 2, size * 2); } }
             function drawSpidyGullu(context, size) { if (spidyGulluImage.complete) { context.drawImage(spidyGulluImage, -size, -size, size * 2, size * 2); } }
+
             function drawHealthPack(context, size) {
                 const firstHeartImage = heartFrames[0];
                 if (firstHeartImage && firstHeartImage.complete) {
@@ -1822,6 +1932,7 @@
                     context.restore();
                 }
             }
+
             function drawDoubleBeam(context, size) {
                 const firstWrenchImage = wrenchFrames[0];
                 if (firstWrenchImage && firstWrenchImage.complete) {
@@ -1844,6 +1955,7 @@
                     context.restore();
                 }
             }
+
             function drawCoinMultiplier(context, size) {
                 const firstCoinImage = coinFrames[0];
                 if (firstCoinImage && firstCoinImage.complete) {
@@ -1869,6 +1981,7 @@
                     context.restore();
                 }
             }
+
             function drawPlayer() {
                 if (isPlayerExploding) return;
                 if (auraColor) {
@@ -1919,11 +2032,12 @@
                 }
                 ctx.restore();
             }
+
             function drawPlayerFire() {
                 if (isPlayerOnFire) {
                     const currentFrameImage = fireFrames[currentFireFrame];
                     if (currentFrameImage && currentFrameImage.complete) {
-                        const fireSize = player.size * 2.5; 
+                        const fireSize = player.size * 2.5;
                         ctx.save();
                         ctx.translate(player.x, player.y);
                         ctx.drawImage(currentFrameImage, -fireSize / 2, -fireSize / 2, fireSize, fireSize);
@@ -1931,6 +2045,7 @@
                     }
                 }
             }
+
             function drawPlayerExplosion() {
                 if (currentBlastFrame < blastFrameCount) {
                     const currentFrameImage = blastFrames[currentBlastFrame];
@@ -1947,6 +2062,7 @@
                     }
                 }
             }
+
             function drawImpactExplosions() {
                 for (let i = impactExplosions.length - 1; i >= 0; i--) {
                     let explosion = impactExplosions[i];
@@ -1964,6 +2080,7 @@
                     }
                 }
             }
+
             function drawHitExplosions() {
                 for (let i = hitExplosions.length - 1; i >= 0; i--) {
                     let explosion = hitExplosions[i];
@@ -1981,6 +2098,7 @@
                     }
                 }
             }
+
             function drawAsteroids() {
                 asteroids.forEach(asteroid => {
                     if (asteroidTailImage.complete) {
@@ -1990,7 +2108,7 @@
                         ctx.rotate(angle);
                         const tailWidth = asteroid.radius * 3;
                         const tailHeight = asteroid.radius * 1.5;
-                        ctx.globalAlpha = 0.7; 
+                        ctx.globalAlpha = 0.7;
                         ctx.drawImage(asteroidTailImage, -tailWidth, -tailHeight / 2, tailWidth, tailHeight);
                         ctx.restore();
                     }
@@ -2024,6 +2142,7 @@
                     }
                 });
             }
+
             function drawRedBombs() {
                 const currentFrameImage = redBombFrames[currentRedBombFrame];
                 redBombs.forEach(bomb => {
@@ -2057,6 +2176,7 @@
                     }
                 });
             }
+
             function drawPowerUps() {
                 powerUps.forEach(powerUp => {
                     const currentFrameImage = wrenchFrames[currentWrenchFrame];
@@ -2136,6 +2256,7 @@
                     }
                 });
             }
+
             function drawBeams() {
                 beams.forEach(beam => {
                     if (beam.image && beam.image.complete) {
@@ -2156,6 +2277,7 @@
                     }
                 });
             }
+
             function drawPulse() {
                 if (pulseActive) {
                     ctx.save();
@@ -2169,6 +2291,8 @@
                     ctx.restore();
                 }
             }
+
+            // --- Spawning Logic ---
             function spawnObjects() {
                 if (frameCount % asteroidSpawnRate === 0) spawnAsteroid();
                 if (frameCount > powerUpStartDelay) {
@@ -2184,6 +2308,7 @@
                     }
                 }
             }
+
             function spawnAsteroid() {
                 let radius = Math.random() * (15 - 5) + 5;
                 let angle = Math.random() * Math.PI * 2;
@@ -2196,6 +2321,7 @@
                 let skin = (radius <= 8) ? smallAsteroidImage : (radius <= 12 ? mediumAsteroidImage : largeAsteroidImage);
                 asteroids.push({ x, y, radius, vx, vy, skin });
             }
+
             function spawnRedBomb() {
                 let radius = 15;
                 let angle = Math.random() * Math.PI * 2;
@@ -2207,6 +2333,7 @@
                 let vy = speed * Math.sin(angleToCenter);
                 redBombs.push({ x, y, radius, vx, vy, color: '#ff0000' });
             }
+
             function spawnPowerUp() {
                 let radius = 8;
                 let angle = Math.random() * Math.PI * 2;
@@ -2218,6 +2345,7 @@
                 let vy = speed * Math.sin(angleToCenter);
                 powerUps.push({ x, y, radius, vx, vy, color: '#ffff00' });
             }
+
             function spawnHealthPack() {
                 let radius = 8;
                 let angle = Math.random() * Math.PI * 2;
@@ -2229,6 +2357,7 @@
                 let vy = speed * Math.sin(angleToCenter);
                 healthPacks.push({ x, y, radius, vx, vy, color: '#00ff00' });
             }
+
             function spawnCoinMultiplier() {
                 let radius = 12;
                 let angle = Math.random() * Math.PI * 2;
@@ -2240,6 +2369,8 @@
                 let vy = speed * Math.sin(angleToCenter);
                 coinMultipliers.push({ x, y, radius, vx, vy, color: '#FFD700' });
             }
+
+            // --- Shop Logic ---
             function showShopMessage(title, message) {
                 const messageBox = document.createElement('div');
                 messageBox.classList.add('message-box');
@@ -2250,6 +2381,7 @@
                     messageBox.remove();
                 });
             }
+
             function drawShopSkins() {
                 const previewSize = 20;
                 for (const key in SKINS) {
@@ -2264,6 +2396,7 @@
                     }
                 }
             }
+
             function drawShopPowerups() {
                 const previewSize = 20;
                 for (const key in UPGRADES) {
@@ -2278,6 +2411,7 @@
                     }
                 }
             }
+
             function generateShopOptions() {
                 skinsOptionsContainer.innerHTML = '';
                 const currentSkin = localStorage.getItem('orbitDashCurrentSkin') || 'ironMan';
@@ -2348,6 +2482,7 @@
                     });
                 });
             }
+
             function generatePowerupOptions() {
                 powerupsOptionsContainer.innerHTML = '';
                 const healthUpgradeInfo = UPGRADES.health;
@@ -2359,6 +2494,7 @@
                 healthUpgradeDiv.className = `upgrade-option ${!canUpgradeHealth ? 'locked' : ''}`;
                 healthUpgradeDiv.innerHTML = `<div class="skin-option-content"><canvas id="powerup-canvas-health" width="60" height="60"></canvas><h3>${healthUpgradeInfo.name} Upgrade</h3></div><p>Current Level: ${healthUpgradeLevel} / ${healthUpgradeInfo.max_level}</p><p>Heals: ${currentHealthRestore}</p><span class="unlock-cost">${isMaxHealth ? 'Max Level' : `Cost: ${healthUpgradeCost} Coins`}</span><button class="purchase-button" id="health-upgrade-btn" ${!canUpgradeHealth ? 'disabled' : ''}>Upgrade</button>`;
                 powerupsOptionsContainer.appendChild(healthUpgradeDiv);
+
                 const doubleBeamUpgradeInfo = UPGRADES.doubleBeam;
                 const doubleBeamUpgradeCost = doubleBeamUpgradeInfo.cost_increase * (doubleBeamUpgradeLevel + 1);
                 const currentDoubleBeamDuration = doubleBeamUpgradeInfo.base_duration + (doubleBeamUpgradeInfo.level_duration_increase * doubleBeamUpgradeLevel);
@@ -2369,6 +2505,7 @@
                 doubleBeamUpgradeDiv.className = `upgrade-option ${!canUpgradeDoubleBeam ? 'locked' : ''}`;
                 doubleBeamUpgradeDiv.innerHTML = `<div class="skin-option-content"><canvas id="powerup-canvas-doubleBeam" width="60" height="60"></canvas><h3>${doubleBeamUpgradeInfo.name} Upgrade</h3></div><p>Current Level: ${doubleBeamUpgradeLevel} / ${maxDoubleBeamLevel}</p><p>Duration: ${currentDoubleBeamDuration}s</p><span class="unlock-cost">${isMaxDoubleBeam ? 'Max Level' : `Cost: ${doubleBeamUpgradeCost} Coins`}</span><button class="purchase-button" id="double-beam-upgrade-btn" ${!canUpgradeDoubleBeam ? 'disabled' : ''}>Upgrade</button>`;
                 powerupsOptionsContainer.appendChild(doubleBeamUpgradeDiv);
+
                 const coinMultiplierUpgradeInfo = UPGRADES.coinMultiplier;
                 const coinMultiplierUpgradeCost = coinMultiplierUpgradeInfo.cost_increase * (coinMultiplierUpgradeLevel + 1);
                 const currentCoinMultiplierDuration = coinMultiplierUpgradeInfo.base_duration + (coinMultiplierUpgradeInfo.level_duration_increase * coinMultiplierUpgradeLevel);
@@ -2379,6 +2516,7 @@
                 coinMultiplierUpgradeDiv.className = `upgrade-option ${!canUpgradeCoinMultiplier ? 'locked' : ''}`;
                 coinMultiplierUpgradeDiv.innerHTML = `<div class="skin-option-content"><canvas id="powerup-canvas-coinMultiplier" width="60" height="60"></canvas><h3>${coinMultiplierUpgradeInfo.name} Upgrade</h3></div><p>Current Level: ${coinMultiplierUpgradeLevel} / ${maxCoinMultiplierLevel}</p><p>Duration: ${currentCoinMultiplierDuration}s</p><span class="unlock-cost">${isMaxCoinMultiplier ? 'Max Level' : `Cost: ${coinMultiplierUpgradeCost} Coins`}</span><button class="purchase-button" id="coin-multiplier-upgrade-btn" ${!canUpgradeCoinMultiplier ? 'disabled' : ''}>Upgrade</button>`;
                 powerupsOptionsContainer.appendChild(coinMultiplierUpgradeDiv);
+
                 document.getElementById('health-upgrade-btn').addEventListener('click', () => {
                     if (canUpgradeHealth) {
                         purchaseSound.triggerAttackRelease("C5", "8n");
@@ -2432,6 +2570,7 @@
                 });
                 drawShopPowerups();
             }
+
             function showShopMenu() {
                 previousScreen = 'mainMenu';
                 buttonClickSynth.triggerAttackRelease("C5", "8n");
@@ -2442,7 +2581,9 @@
                 powerupsTabBtn.classList.remove('active');
                 generateShopOptions();
             }
+
             function getBeamImage() { return beamImages[player.skin] || null; }
+
             function fireBeam() {
                 beamSynth.triggerAttackRelease("G5", "16n");
                 const speed = 8;
@@ -2458,12 +2599,14 @@
                     beams.push({ x: player.x, y: player.y, vx, vy, size: 10, image: beamImage });
                 }
             }
+
             function showInstructions() {
                 buttonClickSynth.triggerAttackRelease("C5", "8n");
                 gamePaused = true;
                 if (animationFrameId) { cancelAnimationFrame(animationFrameId); }
                 showScreen('instructions');
             }
+
             function backFromInstructions() {
                 buttonClickSynth.triggerAttackRelease("C5", "8n");
                 if (previousScreen === 'mainMenu') { showMainMenu(); }
@@ -2474,6 +2617,8 @@
                     gameLoop();
                 }
             }
+
+            // --- Event Listeners ---
             startPlayBtn.addEventListener('click', startIntro);
             startGameBtnInMenu.addEventListener('click', newGame);
             shopBtn.addEventListener('click', showShopMenu);
@@ -2490,6 +2635,7 @@
                 showInstructions();
             });
             instructionsBackBtn.addEventListener('click', backFromInstructions);
+
             reviveBtn.addEventListener('click', () => {
                 const reviveCost = 20 + (reviveCount * 20);
                 if (coins >= reviveCost) {
@@ -2502,7 +2648,6 @@
                     earthHealth = 100;
                     earthHealthDisplay.innerText = 100;
                     isPlayerOnFire = false; // Extinguish fire on revive
-                    if (fireDamageInterval) { clearInterval(fireDamageInterval); fireDamageInterval = null; }
                     reviveCount++;
                     gameOver = false;
                     gamePaused = false;
@@ -2512,6 +2657,7 @@
                     showShopMessage('Insufficient Funds', `You do not have enough coins for a revive. Current cost is ${reviveCost} coins.`);
                 }
             });
+
             skinsTabBtn.addEventListener('click', () => {
                 buttonClickSynth.triggerAttackRelease("C5", "8n");
                 skinsOptionsContainer.style.display = 'flex';
@@ -2528,6 +2674,7 @@
                 skinsTabBtn.classList.remove('active');
                 generatePowerupOptions();
             });
+
             let isQKeyPressed = false;
             window.addEventListener('keydown', (e) => {
                 if (!gameOver && !gamePaused) {
@@ -2543,6 +2690,7 @@
             window.addEventListener('keyup', (e) => {
                 if (e.key === 'q') { isQKeyPressed = false; }
             });
+
             window.addEventListener('blur', () => {
                 if (!gameOver && !gamePaused && isGameStarted) {
                     gamePaused = true;
