@@ -787,6 +787,9 @@
 
             const nebulaImage = new Image();
             let nebula = { x: 0, y: 0, speedX: 0.1, speedY: 0.05 };
+            const nebulaImage2 = new Image();
+            let nebula2 = { x: 0, y: 0, speedX: -0.1, speedY: -0.05 };
+
 
             let impactFrames = [];
             const impactFrameCount = 64;
@@ -874,6 +877,10 @@
             nebulaImage.src = 'images/nebula3.png';
             nebulaImage.onerror = () => nebulaImage.src = 'https://placehold.co/800x800/1a1a33/ffffff?text=Nebula+Not+Found';
             assetsToLoad.push(nebulaImage);
+            
+            nebulaImage2.src = 'images/nebula1.png';
+            nebulaImage2.onerror = () => nebulaImage2.src = 'https://placehold.co/800x800/331a1a/ffffff?text=Nebula+1+Not+Found';
+            assetsToLoad.push(nebulaImage2);
 
             const ironManImage = new Image();
             ironManImage.src = 'images/Ironman.png';
@@ -1378,6 +1385,8 @@
                 planet.y = canvas.height / 2;
                 player.x = planet.x;
                 player.y = planet.y;
+                nebula2.x = canvas.width;
+                nebula2.y = canvas.height;
                 createStars();
             }
             window.addEventListener('resize', resizeCanvas);
@@ -1443,7 +1452,7 @@
                 // --- Handle special states like explosions ---
                 if (isPlayerExploding) {
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    drawNebula();
+                    drawNebulas();
                     drawStars();
                     drawPlanet();
                     drawPlayerExplosion();
@@ -1454,7 +1463,7 @@
                 }
                 if (isExploding) {
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    drawNebula();
+                    drawNebulas();
                     drawStars();
                     drawEarthExplosion();
                     if (frameCount % 6 === 0) { currentEarthExplosionFrame++; }
@@ -1508,7 +1517,7 @@
                 checkCollisions();
 
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
-                drawNebula();
+                drawNebulas();
                 drawStars();
                 drawPlanet();
                 drawPlayer();
@@ -1794,7 +1803,8 @@
                 }
             }
 
-            function drawNebula() {
+            function drawNebulas() {
+                // Draw original nebula (nebula3.png)
                 if (nebulaImage.complete && nebulaImage.width > 0) {
                     const scale = 0.5;
                     const scaledWidth = nebulaImage.width * scale;
@@ -1806,6 +1816,29 @@
                     if (nebula.y > canvas.height) nebula.y = -scaledHeight;
                     if (nebula.y < -scaledHeight) nebula.y = canvas.height;
                     ctx.drawImage(nebulaImage, nebula.x, nebula.y, scaledWidth, scaledHeight);
+                }
+
+                // Draw new nebula (nebula1.png)
+                if (nebulaImage2.complete && nebulaImage2.width > 0) {
+                    const scale = 0.5; // Same size as nebula3
+                    const scaledWidth = nebulaImage2.width * scale;
+                    const scaledHeight = nebulaImage2.height * scale;
+                    nebula2.x += nebula2.speedX;
+                    nebula2.y += nebula2.speedY;
+                    
+                    // --- MODIFIED: When it goes off the top-left corner, reset to a random position on the right or bottom edge ---
+                    if (nebula2.x < -scaledWidth || nebula2.y < -scaledHeight) {
+                        if (Math.random() > 0.5) {
+                            // Reset to a random Y on the right edge
+                            nebula2.x = canvas.width;
+                            nebula2.y = Math.random() * canvas.height;
+                        } else {
+                            // Reset to a random X on the bottom edge
+                            nebula2.x = Math.random() * canvas.width;
+                            nebula2.y = canvas.height;
+                        }
+                    }
+                    ctx.drawImage(nebulaImage2, nebula2.x, nebula2.y, scaledWidth, scaledHeight);
                 }
             }
 
