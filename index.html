@@ -17,7 +17,7 @@
             align-items: center;
             height: 100vh;
             background-color: #0d0d1a;
-            /* --- MODIFIED: Added background image path --- */
+            /* --- MODIFIED: Added background image with new path --- */
             background-image: url('images/Wow.png');
             background-size: cover;
             background-position: center;
@@ -79,9 +79,12 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(ellipse at center, #1b2735 0%, #090a0f 100%);
+            /* --- MODIFIED: Changed background to use start.png with new path --- */
+            background-image: url('images/start.png');
+            background-color: #1b2735; /* Fallback color */
             background-size: cover;
             background-position: center;
+            background-repeat: no-repeat;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -99,6 +102,9 @@
             visibility: hidden;
             opacity: 0;
             transition: opacity 0.5s ease-in-out;
+            background-color: rgba(13, 13, 26, 0.7); /* Added a semi-transparent background for readability */
+            padding: 2rem 4rem;
+            border-radius: 20px;
         }
         #start-screen h1 {
             font-size: 2.5rem;
