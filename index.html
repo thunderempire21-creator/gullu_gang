@@ -322,7 +322,6 @@
         .purchase-button:hover {
             transform: translateY(-2px);
         }
-        /* --- NEW STYLE FOR UNLOCKABLE BUTTON --- */
         .purchase-button.unlockable {
             background: linear-gradient(45deg, #ffdf00, #ffb800);
             box-shadow: 0 5px 15px rgba(255, 223, 0, 0.5);
@@ -681,7 +680,7 @@
             let stars = [];
             let redBombs = [];
             let coinMultipliers = [];
-            let asteroidSpawnRate = 45; 
+            let asteroidSpawnRate = 75; 
             let asteroidSpeed = 1.2; 
             const powerUpSpawnInterval = 15 * 60;
             const redBombSpawnInterval = 15 * 60;
@@ -702,13 +701,12 @@
             let isExploding = false;
             let isPlayerExploding = false;
             let playerExplosionPos = { x: 0, y: 0 };
-            // --- NEW: Player Fire Variables ---
             let isPlayerOnFire = false;
             let fireFrames = [];
             const fireFrameCount = 75;
             let currentFireFrame = 0;
-            const fireAnimationSpeed = 2; // Faster for a flickering effect
-            let fireDamageInterval = null; // To hold the interval ID
+            const fireAnimationSpeed = 2;
+            let fireDamageInterval = null;
             // --- Earth Animation Variables ---
             let earthFrames = [];
             const earthFrameCount = 6;
@@ -828,6 +826,15 @@
             let coinMultiplierUpgradeLevel = parseInt(localStorage.getItem('coinMultiplierUpgradeLevel') || 0);
             const assetsToLoad = [];
             const beamImages = {};
+            const asteroidTailImage = new Image();
+            asteroidTailImage.src = 'images/tail.png';
+            asteroidTailImage.onerror = () => asteroidTailImage.src = 'https://placehold.co/60x30/ff8c00/ffffff?text=Tail';
+            assetsToLoad.push(asteroidTailImage);
+            // --- NEW: Load asteroid aura image ---
+            const asteroidAuraImage = new Image();
+            asteroidAuraImage.src = 'images/aura1.png';
+            asteroidAuraImage.onerror = () => asteroidAuraImage.src = 'https://placehold.co/100x100/ff8c00/ffffff?text=Aura';
+            assetsToLoad.push(asteroidAuraImage);
             nebulaImage.src = 'images/nebula3.png';
             nebulaImage.onerror = () => nebulaImage.src = 'https://placehold.co/800x800/1a1a33/ffffff?text=Nebula+Not+Found';
             assetsToLoad.push(nebulaImage);
@@ -881,23 +888,22 @@
             crackImageLarge.src = 'images/crack5.png';
             crackImageLarge.onerror = () => crackImageLarge.src = 'https://placehold.co/150x150/ffffff/000000?text=Crack';
             assetsToLoad.push(crackImageSmall, crackImageMedium, crackImageLarge);
-            const earthFrameURLs = ['images/frame1.png', 'images/frame2.png', 'images/frame3.png', 'images/frame4.png', 'images/frame5.png', 'images/frame6.png'];
+            const earthFrameURLs = ['frame1.png', 'frame2.png', 'frame3.png', 'frame4.png', 'frame5.png', 'frame6.png'];
             for (let i = 0; i < earthFrameCount; i++) {
                 const frameImage = new Image();
-                frameImage.src = earthFrameURLs[i];
+                frameImage.src = 'images/' + earthFrameURLs[i];
                 frameImage.onerror = () => frameImage.src = `https://placehold.co/100x100/3498db/ffffff?text=E${i+1}`;
                 earthFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
-            const lavaFrameURLs = ['images/star1.png', 'images/star2.png', 'images/star3.png', 'images/star4.png'];
+            const lavaFrameURLs = ['star1.png', 'star2.png', 'star3.png', 'star4.png'];
             for (let i = 0; i < lavaFrameCount; i++) {
                 const frameImage = new Image();
-                frameImage.src = lavaFrameURLs[i];
+                frameImage.src = 'images/' + lavaFrameURLs[i];
                 frameImage.onerror = () => frameImage.src = `https://placehold.co/50x50/ff6600/ffffff?text=Lava${i+1}`;
                 lavaFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
-            // --- NEW: Load Fire Animation Frames ---
             for (let i = 0; i < fireFrameCount; i++) {
                 const frameNumber = (51 + i).toString().padStart(4, '0');
                 const frameImage = new Image();
@@ -916,74 +922,74 @@
             largeAsteroidImage.src = 'images/large.png';
             largeAsteroidImage.onerror = () => largeAsteroidImage.src = 'https://placehold.co/70x70/964B00/ffffff?text=L';
             assetsToLoad.push(smallAsteroidImage, mediumAsteroidImage, largeAsteroidImage);
-            const coinFrameURLs = ['images/coin1.png', 'images/coin2.png', 'images/coin3.png', 'images/coin4.png', 'images/coin5.png', 'images/coin6.png'];
+            const coinFrameURLs = ['coin1.png', 'coin2.png', 'coin3.png', 'coin4.png', 'coin5.png', 'coin6.png'];
             for (let i = 0; i < coinFrameCount; i++) {
                 const frameImage = new Image();
-                frameImage.src = coinFrameURLs[i];
+                frameImage.src = 'images/' + coinFrameURLs[i];
                 frameImage.onerror = () => frameImage.src = `https://placehold.co/50x50/ffd700/000000?text=C${i+1}`;
                 coinFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
-            const redBombFrameURLs = ['images/fatman1.png', 'images/fatman2.png', 'images/fatman3.png', 'images/fatman4.png', 'images/fatman5.png'];
+            const redBombFrameURLs = ['fatman1.png', 'fatman2.png', 'fatman3.png', 'fatman4.png', 'fatman5.png'];
             for (let i = 0; i < redBombFrameCount; i++) {
                 const frameImage = new Image();
-                frameImage.src = redBombFrameURLs[i];
+                frameImage.src = 'images/' + redBombFrameURLs[i];
                 frameImage.onerror = () => frameImage.src = `https://placehold.co/50x50/ff0000/ffffff?text=B${i+1}`;
                 redBombFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
-            const heartFrameURLs = ['images/heart1.png', 'images/heart2.png', 'images/heart3.png', 'images/heart4.png', 'images/heart5.png', 'images/heart6.png'];
+            const heartFrameURLs = ['heart1.png', 'heart2.png', 'heart3.png', 'heart4.png', 'heart5.png', 'heart6.png'];
             for (let i = 0; i < heartFrameCount; i++) {
                 const frameImage = new Image();
-                frameImage.src = heartFrameURLs[i];
+                frameImage.src = 'images/' + heartFrameURLs[i];
                 frameImage.onerror = () => frameImage.src = `https://placehold.co/50x50/00ff00/ffffff?text=H${i+1}`;
                 heartFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
-            const redAuraFrameURLs = ['images/red1.png', 'images/red2.png', 'images/red3.png', 'images/red4.png', 'images/red5.png', 'images/red6.png', 'images/red7.png', 'images/red8.png', 'images/red9.png', 'images/red10.png', 'images/red11.png', 'images/red12.png', 'images/red13.png'];
+            const redAuraFrameURLs = ['red1.png', 'red2.png', 'red3.png', 'red4.png', 'red5.png', 'red6.png', 'red7.png', 'red8.png', 'red9.png', 'red10.png', 'red11.png', 'red12.png', 'red13.png'];
             for (let i = 0; i < redAuraFrameCount; i++) {
                 const frameImage = new Image();
-                frameImage.src = redAuraFrameURLs[i];
+                frameImage.src = 'images/' + redAuraFrameURLs[i];
                 frameImage.onerror = () => frameImage.src = `https://placehold.co/50x50/ff0000/ffffff?text=R${i+1}`;
                 redAuraFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
-            const greenAuraFrameURLs = ['images/green1.png', 'images/green2.png', 'images/green3.png', 'images/green4.png', 'images/green5.png', 'images/green6.png', 'images/green7.png', 'images/green8.png', 'images/green9.png', 'images/green10.png', 'images/green11.png', 'images/green12.png', 'images/green13.png'];
+            const greenAuraFrameURLs = ['green1.png', 'green2.png', 'green3.png', 'green4.png', 'green5.png', 'green6.png', 'green7.png', 'green8.png', 'green9.png', 'green10.png', 'green11.png', 'green12.png', 'green13.png'];
             for (let i = 0; i < greenAuraFrameCount; i++) {
                  const frameImage = new Image();
-                 frameImage.src = greenAuraFrameURLs[i];
+                 frameImage.src = 'images/' + greenAuraFrameURLs[i];
                  frameImage.onerror = () => frameImage.src = `https://placehold.co/50x50/00ff00/ffffff?text=G${i+1}`;
                  greenAuraFrames.push(frameImage);
                  assetsToLoad.push(frameImage);
             }
-            const yellowAuraFrameURLs = ['images/yellow1.png', 'images/yellow2.png', 'images/yellow3.png', 'images/yellow4.png', 'images/yellow5.png', 'images/yellow6.png', 'images/yellow7.png', 'images/yellow8.png', 'images/yellow9.png', 'images/yellow10.png', 'images/yellow11.png', 'images/yellow12.png'];
+            const yellowAuraFrameURLs = ['yellow1.png', 'yellow2.png', 'yellow3.png', 'yellow4.png', 'yellow5.png', 'yellow6.png', 'yellow7.png', 'yellow8.png', 'yellow9.png', 'yellow10.png', 'yellow11.png', 'yellow12.png'];
             for (let i = 0; i < yellowAuraFrameCount; i++) {
                  const frameImage = new Image();
-                 frameImage.src = yellowAuraFrameURLs[i];
+                 frameImage.src = 'images/' + yellowAuraFrameURLs[i];
                  frameImage.onerror = () => frameImage.src = `https://placehold.co/50x50/ffff00/ffffff?text=Y${i+1}`;
                  yellowAuraFrames.push(frameImage);
                  assetsToLoad.push(frameImage);
             }
-            const rayAuraFrameURLs = ['images/ray1.png', 'images/ray2.png', 'images/ray3.png', 'images/ray4.png', 'images/ray5.png'];
+            const rayAuraFrameURLs = ['ray1.png', 'ray2.png', 'ray3.png', 'ray4.png', 'ray5.png'];
             for (let i = 0; i < rayAuraFrameCount; i++) {
                 const frameImage = new Image();
-                frameImage.src = rayAuraFrameURLs[i];
+                frameImage.src = 'images/' + rayAuraFrameURLs[i];
                 frameImage.onerror = () => frameImage.src = `https://placehold.co/50x50/ffff00/ffffff?text=RAY${i+1}`;
                 rayAuraFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
-            const wrenchFrameURLs = ['images/wrench1.png', 'images/wrench2.png', 'images/wrench3.png', 'images/wrench4.png', 'images/wrench5.png'];
+            const wrenchFrameURLs = ['wrench1.png', 'wrench2.png', 'wrench3.png', 'wrench4.png', 'wrench5.png'];
             for (let i = 0; i < wrenchFrameCount; i++) {
                 const frameImage = new Image();
-                frameImage.src = wrenchFrameURLs[i];
+                frameImage.src = 'images/' + wrenchFrameURLs[i];
                 frameImage.onerror = () => frameImage.src = `https://placehold.co/50x50/ffff00/ffffff?text=W${i+1}`;
                 wrenchFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
             }
-            const blastFrameURLs = ['images/blast1.png', 'images/blast2.png', 'images/blast3.png', 'images/blast4.png', 'images/blast5.png', 'images/blast6.png', 'images/blast7.png', 'images/blast8.png', 'images/blast9.png', 'images/blast10.png', 'images/blast11.png', 'images/blast12.png', 'images/blast13.png', 'images/blast14.png', 'images/blast15.png'];
+            const blastFrameURLs = ['blast1.png', 'blast2.png', 'blast3.png', 'blast4.png', 'blast5.png', 'blast6.png', 'blast7.png', 'blast8.png', 'blast9.png', 'blast10.png', 'blast11.png', 'blast12.png', 'blast13.png', 'blast14.png', 'blast15.png'];
             for (let i = 0; i < blastFrameCount; i++) {
                 const frameImage = new Image();
-                frameImage.src = blastFrameURLs[i];
+                frameImage.src = 'images/' + blastFrameURLs[i];
                 frameImage.onerror = () => frameImage.src = `https://placehold.co/100x100/ff9900/ffffff?text=Boom${i+1}`;
                 blastFrames.push(frameImage);
                 assetsToLoad.push(frameImage);
@@ -1305,7 +1311,7 @@
                 isGameStarted = true;
                 asteroidSpeed = 1.2;
                 player.speed = 0.02;
-                asteroidSpawnRate = 45;
+                asteroidSpawnRate = 75;
                 score = 0;
                 earthHealth = 100;
                 playerHealth = 100;
@@ -1521,8 +1527,11 @@
                                 currentHighScore = score;
                                 localStorage.setItem('orbitDashHighScore', currentHighScore);
                             }
-                            if (score > lastScoreIncrease && score % 15 === 0) {
-                                asteroidSpeed += 0.1;
+                            if (score > lastScoreIncrease && score % 20 === 0) { 
+                                asteroidSpeed += 0.05;
+                                if (asteroidSpawnRate > 25) {
+                                    asteroidSpawnRate -= 2;
+                                }
                             }
                             hitExplosions.push({ x: asteroid.x, y: asteroid.y, radius: asteroid.radius, currentFrame: 0 });
                             beams.splice(i, 1);
@@ -1974,21 +1983,25 @@
             }
             function drawAsteroids() {
                 asteroids.forEach(asteroid => {
-                    ctx.save();
-                    ctx.globalAlpha = 0.5;
-                    const trailLength = 20;
-                    for (let i = 0; i < trailLength; i++) {
-                        const alpha = 1 - i / trailLength;
-                        ctx.beginPath();
-                        ctx.arc(asteroid.x - asteroid.vx * i * 0.5, asteroid.y - asteroid.vy * i * 0.5, asteroid.radius * alpha, 0, Math.PI * 2);
-                        const gradient = ctx.createRadialGradient(asteroid.x - asteroid.vx * i * 0.5, asteroid.y - asteroid.vy * i * 0.5, 0, asteroid.x - asteroid.vx * i * 0.5, asteroid.y - asteroid.vy * i * 0.5, asteroid.radius * alpha);
-                        gradient.addColorStop(0, `rgba(255, 255, 0, ${alpha})`);
-                        gradient.addColorStop(0.5, `rgba(255, 100, 0, ${alpha})`);
-                        gradient.addColorStop(1, `rgba(255, 0, 0, 0)`);
-                        ctx.fillStyle = gradient;
-                        ctx.fill();
+                    if (asteroidTailImage.complete) {
+                        const angle = Math.atan2(asteroid.vy, asteroid.vx);
+                        ctx.save();
+                        ctx.translate(asteroid.x, asteroid.y);
+                        ctx.rotate(angle);
+                        const tailWidth = asteroid.radius * 3;
+                        const tailHeight = asteroid.radius * 1.5;
+                        ctx.globalAlpha = 0.7; 
+                        ctx.drawImage(asteroidTailImage, -tailWidth, -tailHeight / 2, tailWidth, tailHeight);
+                        ctx.restore();
                     }
-                    ctx.restore();
+                    if (asteroidAuraImage.complete) {
+                        const auraSize = asteroid.radius * 4;
+                        ctx.save();
+                        ctx.globalAlpha = 0.5;
+                        ctx.translate(asteroid.x, asteroid.y);
+                        ctx.drawImage(asteroidAuraImage, -auraSize / 2, -auraSize / 2, auraSize, auraSize);
+                        ctx.restore();
+                    }
                     if (asteroid.skin && asteroid.skin.complete) {
                         ctx.save();
                         ctx.translate(asteroid.x, asteroid.y);
