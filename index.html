@@ -839,8 +839,8 @@
             let redBombs = [];
             let coinMultipliers = [];
 
-            let asteroidSpawnRate = 90; // MODIFIED: Slower spawn rate initially
-            let asteroidSpeed = 0.5; // MODIFIED: Reduced initial asteroid speed for a medium pace
+            let asteroidSpawnRate = 90; 
+            let asteroidSpeed = 0.4; // MODIFIED: Further reduced initial asteroid speed
             const powerUpSpawnInterval = 15 * 60;
             const redBombSpawnInterval = 15 * 60;
             const coinMultiplierSpawnInterval = 20 * 60;
@@ -946,7 +946,7 @@
                 y: 0,
                 orbitRadius: 100,
                 angle: 0,
-                speed: 0.012, // MODIFIED: Reduced player speed for a medium pace
+                speed: 0.01, // MODIFIED: Further reduced player speed
                 direction: 1,
                 size: 15,
                 skin: localStorage.getItem('orbitDashCurrentSkin') || 'ironMan'
@@ -1621,9 +1621,9 @@
                 stopAllMusic();
                 hasPlayedShipSound = false;
                 isGameStarted = true;
-                asteroidSpeed = 0.5; // MODIFIED: Reset to new medium speed
-                player.speed = 0.012; // MODIFIED: Reset to new medium speed
-                asteroidSpawnRate = 90; // MODIFIED: Slower spawn rate
+                asteroidSpeed = 0.4; // MODIFIED: Reset to new medium speed
+                player.speed = 0.01; // MODIFIED: Reset to new medium speed
+                asteroidSpawnRate = 90; 
                 score = 0;
                 earthHealth = 100;
                 playerHealth = 100;
@@ -1655,13 +1655,11 @@
                 reviveCount = 0;
                 previousScreen = 'game';
                 
-                // --- OPTIMIZATION: Force update UI on new game ---
                 updateUIDisplay(true);
                 
                 gameLoop();
             }
 
-            // --- OPTIMIZATION: Centralized function to update UI text only when values change ---
             function updateUIDisplay(force = false) {
                 const currentScore = score;
                 if (currentScore !== lastDisplayedScore || force) {
@@ -1793,14 +1791,12 @@
                 drawBeams();
                 drawPulse();
 
-                // --- OPTIMIZATION: Update UI only when needed ---
                 updateUIDisplay();
 
                 frameCount++;
                 animationFrameId = requestAnimationFrame(gameLoop);
             }
 
-            // --- OPTIMIZATION: Use squared distance to avoid expensive Math.sqrt() ---
             function distanceSquared(x1, y1, x2, y2) {
                 const dx = x2 - x1;
                 const dy = y2 - y1;
@@ -1830,7 +1826,7 @@
             }
             function updatePulse() {
                 if (pulseActive) {
-                    pulseRadius += 1.2; // MODIFIED: Reduced pulse wave speed for performance and feel
+                    pulseRadius += 1.2; 
                     if (pulseRadius > maxPulseRadius) {
                         pulseActive = false;
                         pulseRadius = 0;
@@ -2076,7 +2072,7 @@
             // --- Drawing Functions ---
             function createStars() {
                 stars = [];
-                const starCount = 200; // MODIFIED: Reduced star count for performance
+                const starCount = 200; 
                 for (let i = 0; i < starCount; i++) {
                     stars.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, radius: Math.random() * 1.5, opacity: Math.random() });
                 }
@@ -2637,7 +2633,7 @@
                 let angle = Math.random() * Math.PI * 2;
                 let x = planet.x + canvas.width * 0.6 * Math.cos(angle);
                 let y = planet.y + canvas.height * 0.6 * Math.sin(angle);
-                let speed = Math.random() * (1.5 - 0.8) + 0.8;
+                let speed = Math.random() * (1.2 - 0.6) + 0.6; // MODIFIED: Slower powerup speed
                 let angleToCenter = Math.atan2(planet.y - y, planet.x - x);
                 let vx = speed * Math.cos(angleToCenter);
                 let vy = speed * Math.sin(angleToCenter);
@@ -2648,7 +2644,7 @@
                 let angle = Math.random() * Math.PI * 2;
                 let x = planet.x + canvas.width * 0.6 * Math.cos(angle);
                 let y = planet.y + canvas.height * 0.6 * Math.sin(angle);
-                let speed = Math.random() * (1.5 - 0.8) + 0.8;
+                let speed = Math.random() * (1.2 - 0.6) + 0.6; // MODIFIED: Slower powerup speed
                 let angleToCenter = Math.atan2(planet.y - y, planet.x - x);
                 let vx = speed * Math.cos(angleToCenter);
                 let vy = speed * Math.sin(angleToCenter);
@@ -2659,7 +2655,7 @@
                 let angle = Math.random() * Math.PI * 2;
                 let x = planet.x + canvas.width * 0.6 * Math.cos(angle);
                 let y = planet.y + canvas.height * 0.6 * Math.sin(angle);
-                let speed = Math.random() * (1.5 - 0.8) + 0.8;
+                let speed = Math.random() * (1.2 - 0.6) + 0.6; // MODIFIED: Slower powerup speed
                 let angleToCenter = Math.atan2(planet.y - y, planet.x - x);
                 let vx = speed * Math.cos(angleToCenter);
                 let vy = speed * Math.sin(angleToCenter);
